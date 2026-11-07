@@ -4,7 +4,6 @@ import { products, byId, fmt, fromPrice } from '../../data/catalog.js';
 import { art } from '../art.js';
 import { shelf, wireShelves } from '../cards.js';
 import { createStage, makeWaves, webglOK } from '../three/stage.js';
-import { makePhone, makeLaptop } from '../three/devices.js';
 import { makeLogo3D } from '../three/logo3d.js';
 import { logoSVG } from '../brand.js';
 import { thumb } from '../layout.js';
@@ -43,7 +42,6 @@ document.querySelector('[data-ig]').href = CONFIG.instagram;
 
 // Story panels — iPhone 18 lineup, prices straight from the catalogue.
 const ip18 = byId('iphone-18');
-const STORY_TINTS = [0xe3e4e6, 0x2c2c2e, 0x8e8e93];
 const LINES = [
   ['Pro', 'Potencia profesional, en tu bolsillo.'],
   ['Pro Max', 'Más pantalla. Más batería. Más todo.'],
@@ -59,8 +57,49 @@ document.getElementById('story-copy').innerHTML = ip18.models.map((m, i) => `
   </article>`).join('');
 document.getElementById('story-progress').innerHTML = ip18.models.map(() => '<i><b></b></i>').join('');
 
-// ── Hero: 3D logo entrance, then the iPhone 18 scroll story ───────────────
+// ── Hero: animated 3D logo first, then Apple's own iPhone 18 Pro footage ──
+// The phone is a real image sequence (frames of Apple's iPhone 18 Pro camera
+// animation) drawn to a canvas and scrubbed by scroll, Apple-site style.
+const SEQ = { count: 100, src: (i) => `/seq/iphone18/${String(i + 1).padStart(3, '0')}.webp` };
+
+function heroSequence(canvas) {
+  const ctx = canvas.getContext('2d');
+  const frames = new Array(SEQ.count);
+  let want = 0, drawn = -1;
+  const load = (i) => new Promise((res) => {
+    if (frames[i]) return res();
+    const im = new Image(); im.decoding = 'async';
+    im.onload = () => { frames[i] = im; if (i === want) draw(true); res(); };
+    im.onerror = res; im.src = SEQ.src(i);
+  });
+  const size = () => {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr;
+    draw(true);
+  };
+  function draw(force) {
+    let i = want;
+    while (i > 0 && !frames[i]) i--; // nearest frame that is ready
+    const im = frames[i];
+    if (!im || (!force && i === drawn)) return;
+    drawn = i;
+    const { width: w, height: h } = canvas;
+    const sc = Math.max(w / im.width, h / im.height); // cover
+    const iw = im.width * sc, ih = im.height * sc;
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(im, (w - iw) / 2, (h - ih) / 2, iw, ih);
+  }
+  new ResizeObserver(size).observe(canvas);
+  return {
+    first: () => load(0).then(size),
+    all: async () => { for (let i = 0; i < SEQ.count; i += 4) load(i); for (let i = 0; i < SEQ.count; i++) await load(i); },
+    set: (p) => { want = Math.round(Math.max(0, Math.min(1, p)) * (SEQ.count - 1)); draw(false); },
+  };
+}
+
 function hero() {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
   const word = document.getElementById('hero-word');
   const chars = split(word, { chars: true });
   const tag = document.getElementById('hero-tag');
@@ -69,10 +108,13 @@ function hero() {
   const stageEl = document.getElementById('hero-stage');
   const feats = gsap.utils.toArray('.hero__feat');
   const container = document.getElementById('hero-canvas');
+  const seqCanvas = document.getElementById('hero-seq');
   const unlock = () => document.body.classList.remove('intro-lock');
+  const seq = heroSequence(seqCanvas);
+  seq.first();
 
-  let phone, waves, stage, logo;
-  const state = { py: -7, px: 0, ry: -0.5, rx: 0.35, rz: 0, s: 1, amp: 0.4, waveY: -1.5, waveOp: 0 };
+  let waves, stage, logo;
+  const state = { amp: 0.4, waveY: -1.5, waveOp: 0, frame: 0 };
   const L = { y: 0.9, z: 0, ry: 0, rx: 0, s: 1, op: 1 };
 
   if (GL) {
@@ -82,8 +124,6 @@ function hero() {
     stage.scene.add(waves);
     logo = makeLogo3D();
     stage.scene.add(logo);
-    phone = makePhone({ color: 0xe3e4e6 });
-    stage.scene.add(phone);
     const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
     window.addEventListener('pointermove', (e) => { pointer.tx = (e.clientX / innerWidth - 0.5); pointer.ty = (e.clientY / innerHeight - 0.5); }, { passive: true });
     stage.onTick((t) => {
@@ -91,7 +131,7 @@ function hero() {
       waves.userData.update(t, state.amp);
       waves.userData.setOpacity(state.waveOp);
       waves.position.y = state.waveY;
-      // logo
+      waves.visible = state.waveOp > 0.01;
       const ls = L.s * (isMobile() ? 0.3 : 0.42);
       logo.scale.setScalar(ls);
       logo.position.set(0, L.y * (isMobile() ? 0.9 : 1) + Math.sin(t * 1.1) * 0.05, L.z);
@@ -99,101 +139,97 @@ function hero() {
       logo.userData.state.opacity = L.op;
       logo.visible = L.op > 0.01;
       logo.userData.update(t);
-      // phone
-      const s = state.s * (isMobile() ? 0.82 : 1);
-      phone.scale.setScalar(s);
-      phone.position.set(state.px * (isMobile() ? 0 : 1), state.py + Math.sin(t * 1.2) * 0.05, 0);
-      phone.rotation.set(state.rx + pointer.y * 0.25, state.ry + pointer.x * 0.5, state.rz);
     });
   } else {
-    container.innerHTML = `<div class="fallback-art" style="color:#fff">${logoSVG({ ring: 'icon', cls: 'art' })}</div>`;
+    container.innerHTML = `<div class="fallback-art hero__logo2d" style="color:#fff">${logoSVG({ ring: 'icon', cls: 'art' })}</div>`;
   }
-
+  document.body.classList.remove('hero-pending');
   gsap.set(stageEl.children, { opacity: 0, y: 30 });
-  if (reduced || !GL) {
-    unlock();
-    if (logo) Object.assign(logo.userData.state, { gather: 1, sparkle: 0, ring: 1, mark: 1, disc: 1 });
-    if (stage) stage.camera.position.z = 11;
-    gsap.set(stageEl.children, { opacity: 1, y: 0 });
-    return;
-  }
+  gsap.set(seqCanvas, { opacity: 0 });
 
-  // ── Entrance ──
-  const S = logo.userData.state;
+  // ── Entrance: starts on the very first frame, no loading screen ──
   lenis?.stop();
-  const intro = gsap.timeline({ delay: 0.35, onComplete: () => { lenis?.start(); } });
+  const intro = gsap.timeline({ onComplete: () => { lenis?.start(); seq.all(); } });
+  if (logo) {
+    const S = logo.userData.state;
+    intro
+      .to(S, { gather: 1, duration: 2.2, ease: 'power2.inOut' }, 0)
+      .to(stage.camera.position, { z: 11, duration: 3.2, ease: 'expo.inOut' }, 0)
+      .to(S, { ring: 1, duration: 1.4, ease: 'expo.inOut' }, 0.6)
+      .to(S, { mark: 1, duration: 1.4, ease: 'expo.out' }, 1.3)
+      .fromTo(flash, { opacity: 0 }, { opacity: 0.85, duration: 0.18, ease: 'power2.out' }, 2.05)
+      .to(flash, { opacity: 0, duration: 0.9, ease: 'power2.out' }, 2.23)
+      .to(S, { disc: 1, duration: 1.2, ease: 'expo.out' }, 2.05)
+      .to(S, { sparkle: 0, duration: 1.4, ease: 'power2.out' }, 2.1)
+      .fromTo(S, { sweepX: -9, sweepI: 0 }, { sweepX: 9, sweepI: 90, duration: 1.8, ease: 'power2.inOut' }, 2.2)
+      .to(S, { sweepI: 0, duration: 0.6 }, 3.8)
+      .to(state, { waveOp: 1, waveY: 0, duration: 2.4, ease: 'expo.out' }, 2.1);
+  } else {
+    intro.from('.hero__logo2d', { scale: 0.6, opacity: 0, rotationY: -120, transformPerspective: 900, duration: 1.8, ease: 'expo.out' }, 0);
+  }
+  const t0 = logo ? 2.3 : 0.8;
   intro
-    .to(S, { gather: 1, duration: 2.4, ease: 'power2.inOut' }, 0)
-    .to(stage.camera.position, { z: 11, duration: 3.6, ease: 'expo.inOut' }, 0)
-    .to(S, { ring: 1, duration: 1.5, ease: 'expo.inOut' }, 0.9)
-    .to(S, { mark: 1, duration: 1.5, ease: 'expo.out' }, 1.6)
-    .fromTo(flash, { opacity: 0 }, { opacity: 0.85, duration: 0.18, ease: 'power2.out' }, 2.35)
-    .to(flash, { opacity: 0, duration: 0.9, ease: 'power2.out' }, 2.53)
-    .to(S, { disc: 1, duration: 1.2, ease: 'expo.out' }, 2.35)
-    .to(S, { sparkle: 0, duration: 1.4, ease: 'power2.out' }, 2.4)
-    .fromTo(S, { sweepX: -9, sweepI: 0 }, { sweepX: 9, sweepI: 90, duration: 1.8, ease: 'power2.inOut' }, 2.5)
-    .to(S, { sweepI: 0, duration: 0.6 }, 4.1)
-    .to(state, { waveOp: 1, waveY: 0, duration: 2.4, ease: 'expo.out' }, 2.4)
-    .from(chars, { yPercent: 120, opacity: 0, rotateX: -90, duration: 1.3, ease: 'expo.out', stagger: 0.06 }, 2.6)
-    .from(tag, { opacity: 0, y: 16, letterSpacing: '0.9em', duration: 1.4, ease: 'expo.out' }, 2.9)
-    .add(unlock, 3.2)
-    .from('#hero-scroll', { opacity: 0, duration: 1 }, 3.4);
-  // Any input skips straight to the end.
+    .from(chars, { yPercent: 120, opacity: 0, rotateX: -90, duration: 1.3, ease: 'expo.out', stagger: 0.06 }, t0)
+    .from(tag, { opacity: 0, y: 16, letterSpacing: '0.9em', duration: 1.4, ease: 'expo.out' }, t0 + 0.3)
+    .add(unlock, t0 + 0.6)
+    .from('#hero-scroll', { opacity: 0, duration: 1 }, t0 + 0.8);
   window.__bencarIntro = intro; // handy for QA / screenshots
   const skip = () => { if (intro.isActive()) intro.progress(1); };
   ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, skip, { once: true, passive: true }));
 
-  // ── Scroll choreography ──
+  // ── Scroll: logo flies off, Apple's iPhone 18 Pro footage takes over ──
   const tl = gsap.timeline({ defaults: { ease: 'none' },
-    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom bottom', scrub: 1 } });
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom bottom', scrub: 0.6 } });
   tl.to('#hero-scroll', { opacity: 0, duration: 0.2 }, 0)
     .to(L, { ry: Math.PI * 1.15, rx: -0.25, z: -6, y: 2.6, op: 0, duration: 1.1, ease: 'power2.in' }, 0)
+    .to('.hero__logo2d', { opacity: 0, scale: 0.7, duration: 0.8 }, 0)
+    .to(state, { waveOp: 0, duration: 0.8 }, 0.2)
     .to(lockup, { opacity: 0, y: -60, filter: 'blur(10px)', duration: 0.7 }, 0)
-    .to(state, { py: 0, ry: 0.35, rx: 0, s: 1.1, amp: 0.55, duration: 1 }, 0.6)
-    .to(state, { ry: Math.PI + 0.45, rz: -0.08, duration: 1.2 }, 1.6)
-    .fromTo(feats[0], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 1.7)
-    .to(state, { px: 1.6, ry: Math.PI * 2 - 0.5, rz: 0.05, duration: 1.2 }, 2.8)
-    .fromTo(feats[1], { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4 }, 2.9)
-    .fromTo(feats[2], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 3.3)
+    .to(seqCanvas, { opacity: 1, duration: 0.6 }, 0.5)
+    .to(state, { frame: 1, duration: 3.6, onUpdate: () => seq.set(state.frame) }, 0.7)
+    .fromTo(feats[0], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 1.5)
+    .fromTo(feats[1], { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4 }, 2.4)
+    .fromTo(feats[2], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 3.1)
     .to(feats, { opacity: 0, y: -30, duration: 0.4, stagger: 0.05 }, 4.0)
-    .to(state, { px: 0, py: 0.75, ry: Math.PI * 2 + 0.25, rx: 0.08, rz: 0, s: 0.92, amp: 0.25, waveY: 1.2, duration: 1 }, 4.0)
+    .to(seqCanvas, { opacity: 0.32, scale: 0.94, duration: 0.6 }, 4.3)
     .to(stageEl.children, { opacity: 1, y: 0, stagger: 0.08, duration: 0.4 }, 4.6);
 }
 
-// ── Story (pinned lineup) ────────────────────────────────────────────────
+// ── Story (pinned lineup): real Apple photos, one finish per model ───────
+// Each panel turns the phone through Apple's product angles as you scroll.
+const ANGLE_ORDER = ['', '_av6', '_av3', '_av2'];
 function story() {
   const panels = gsap.utils.toArray('.story__panel');
   const bars = gsap.utils.toArray('#story-progress b');
   const container = document.getElementById('story-canvas');
-  const state = { ry: -0.6, x: 1.9, colorIdx: 0 };
-  let phone;
-  if (GL) {
-    const stage = createStage(container, { fov: 28, z: 11, exposure: 1.1 });
-    phone = makePhone({ color: STORY_TINTS[0] });
-    stage.scene.add(phone);
-    const spot = new stage.THREE.PointLight(0xffffff, 30, 20); spot.position.set(-3, 3, 4); stage.scene.add(spot);
-    const target = new stage.THREE.Color(STORY_TINTS[0]);
-    stage.onTick((t) => {
-      const mats = [phone.userData.frame.material, phone.userData.back.material];
-      mats.forEach((m) => m.color.lerp(target, 0.08));
-      phone.userData.plateau.material.color.lerp(target.clone().multiplyScalar(0.85), 0.08);
-      phone.position.set(isMobile() ? 0 : state.x, isMobile() ? 1.1 : 0, 0);
-      phone.scale.setScalar(isMobile() ? 0.78 : 1.12);
-      phone.rotation.set(0.12 + Math.sin(t * 0.8) * 0.04, state.ry, -0.06);
-    });
-    state.setColor = (i) => target.set(STORY_TINTS[i]);
-  } else {
-    container.innerHTML = `<div class="fallback-art" style="left:45%">${art('phone', '#2f4a6b')}</div>`;
-  }
+  const sets = [0, 1, 2].map((i) => {
+    const set = ip18.colorImages[i] || ip18.images;
+    return ANGLE_ORDER.map((suf) => set.find((src) => src.endsWith(`-202609${suf}.webp`))).filter(Boolean);
+  });
+  container.innerHTML = `<div class="story__phone">${sets.map((set, m) => set.map((src, a) =>
+    `<img src="${src}" alt="" data-m="${m}" data-a="${a}" loading="lazy" decoding="async"/>`).join('')).join('')}</div>`;
+  const imgs = [...container.querySelectorAll('img')];
+  let shown = null;
+  const show = (m, a) => {
+    const el = imgs.find((x) => +x.dataset.m === m && +x.dataset.a === a) || imgs[0];
+    if (el === shown) return;
+    const prev = shown; shown = el;
+    gsap.to(el, { opacity: 1, rotationY: 0, scale: 1, duration: 0.7, ease: 'expo.out', overwrite: true });
+    if (prev) gsap.to(prev, { opacity: 0, rotationY: -25, scale: 0.96, duration: 0.5, ease: 'power2.out', overwrite: true });
+  };
+  gsap.set(imgs, { opacity: 0, rotationY: 25, scale: 0.96, transformPerspective: 1200 });
+  show(0, 0);
   if (reduced) { panels.forEach((p) => gsap.set(p, { opacity: 1 })); return; }
 
   const tl = gsap.timeline({ defaults: { ease: 'none' },
     scrollTrigger: { trigger: '.story', start: 'top top', end: 'bottom bottom', scrub: 0.8,
       onUpdate: (st) => {
-        const i = Math.min(panels.length - 1, Math.floor(st.progress * panels.length * 0.999));
-        if (state.setColor && state.colorIdx !== i) { state.colorIdx = i; state.setColor(i); }
+        const x = st.progress * panels.length * 0.9999;
+        const m = Math.min(panels.length - 1, Math.floor(x));
+        const n = sets[m].length;
+        show(m, Math.min(n - 1, Math.floor((x - m) * n)));
       } } });
-  tl.to(state, { ry: Math.PI * 4 - 0.6, duration: panels.length, ease: 'none' }, 0);
+  tl.fromTo('.story__phone', { y: 20 }, { y: -20, duration: panels.length }, 0);
   panels.forEach((p, i) => {
     tl.fromTo(p, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.25 }, i + 0.02)
       .fromTo(bars[i], { scaleY: 0 }, { scaleY: 1, duration: 1 }, i);
@@ -201,23 +237,15 @@ function story() {
   });
 }
 
-// ── Mac lid ───────────────────────────────────────────────────────────────
+// ── Mac: the real MacBook Air photo "opens" towards you on scroll ─────────
 function lid() {
   const container = document.getElementById('lid-canvas');
-  if (!GL) { container.innerHTML = `<div class="fallback-art">${art('laptop', '#c7d3de')}</div>`; return; }
-  const stage = createStage(container, { fov: 26, z: 12 });
-  const laptop = makeLaptop({ color: 0xc7d3de });
-  stage.scene.add(laptop);
-  const st = { open: reduced ? 1 : 0, rx: 0.55, s: 0.9, y: -0.7 };
-  stage.onTick(() => {
-    laptop.userData.setOpen(st.open);
-    laptop.rotation.set(st.rx, -0.0, 0);
-    laptop.scale.setScalar(st.s * (isMobile() ? 0.7 : 1));
-    laptop.position.y = st.y;
-  });
+  const mba = byId('macbook-air');
+  container.innerHTML = `<div class="lid__mac"><img src="${mba.images[0]}" alt="MacBook Air" loading="lazy" decoding="async"/></div>`;
   if (reduced) return;
   gsap.timeline({ scrollTrigger: { trigger: '.lid', start: 'top top', end: 'bottom bottom', scrub: 1 } })
-    .fromTo(st, { open: 0, rx: 0.9, s: 0.75 }, { open: 1, rx: 0.2, s: 1.05, ease: 'power2.inOut', duration: 1 });
+    .fromTo('.lid__mac img', { rotationX: 72, scale: 0.78, y: 60, transformPerspective: 1400, transformOrigin: '50% 100%' },
+      { rotationX: 0, scale: 1.02, y: 0, ease: 'power2.inOut', duration: 1 });
 }
 
 // ── Small scenes ─────────────────────────────────────────────────────────

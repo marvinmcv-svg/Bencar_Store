@@ -7,7 +7,7 @@
 // To update the store, edit this file only.
 // ---------------------------------------------------------------------------
 
-import { IMAGES } from './images.js';
+import { IMAGES, COLOR_IMAGES } from './images.js';
 
 export const CATALOG_DATE = 'Octubre 2026';
 
@@ -24,11 +24,17 @@ export const categories = [
   { id: 'dyson', name: 'Dyson', art: 'dyson', blurb: 'Airwrap, Supersonic y Airstrait.' },
 ];
 
+// Real finishes of the Pro models; each one has its own Apple photo set (COLOR_IMAGES).
 const IPHONE_17_COLORS = [
-  { name: 'Black', hex: '#2b2d31' },
-  { name: 'White', hex: '#eceae5' },
-  { name: 'Gold', hex: '#d9c3a0' },
-  { name: 'Blue', hex: '#5b7a99' },
+  { name: 'Naranja cósmico', hex: '#e2793a' },
+  { name: 'Azul profundo', hex: '#3b4660' },
+  { name: 'Plata', hex: '#e3e4e6' },
+];
+const IPHONE_18_COLORS = [
+  { name: 'Plata', hex: '#e3e4e6' },
+  { name: 'Burdeos', hex: '#5e2430' },
+  { name: 'Azul glaciar', hex: '#b5c9de' },
+  { name: 'Negro', hex: '#2c2c2e' },
 ];
 
 const IPHONE_11_TO_17 = [
@@ -44,7 +50,7 @@ export const products = [
   // ───────────── iPhone ─────────────
   {
     id: 'iphone-18', cat: 'iphone', name: 'iPhone 18', art: 'phone', tint: '#c9ccd2',
-    badge: 'Nuevo', currency: 'USD', featured: true,
+    badge: 'Nuevo', currency: 'USD', featured: true, colors: IPHONE_18_COLORS,
     tagline: 'El más nuevo. Tres modelos, hasta 2TB.',
     promo: 'Por la compra de tu iPhone 18, obtén un 50% de descuento en tu funda original Apple y llévate un protector de pantalla de regalo.',
     models: [
@@ -204,7 +210,7 @@ export const products = [
   { id: 'dyson-airstrait', cat: 'dyson', name: 'Dyson Airstrait', art: 'dyson', tint: '#c06a3c', currency: 'USD', tagline: 'Seca y alisa al mismo tiempo.', models: [{ name: 'Airstrait', options: [o('Consultar', null)] }] },
 ];
 
-products.forEach((p) => { p.images = IMAGES[p.id] || []; });
+products.forEach((p) => { p.images = IMAGES[p.id] || []; p.colorImages = COLOR_IMAGES[p.id] || null; });
 
 export const services = [
   {

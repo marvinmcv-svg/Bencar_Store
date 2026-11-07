@@ -93,7 +93,7 @@ form.addEventListener('click', (e) => {
   if (!t || t.disabled) return;
   if (t.dataset.model != null) { sel.model = Number(t.dataset.model); sel.option = 0; render(); pulse(); }
   else if (t.dataset.opt != null) { sel.option = Number(t.dataset.opt); render(); }
-  else if (t.dataset.color != null) { sel.color = Number(t.dataset.color); render(); viewer.setTint?.(p.colors[sel.color].hex); }
+  else if (t.dataset.color != null) { sel.color = Number(t.dataset.color); render(); viewer.setColor?.(); }
   else if (t.hasAttribute('data-add')) addToBag(t);
 });
 
@@ -101,66 +101,85 @@ function addToBag(btn) {
   const model = p.models[sel.model];
   const opt = model.options[sel.option];
   bag.add({
-    id: p.id, name: p.name, art: p.art, tint: p.colors ? p.colors[sel.color].hex : p.tint, img: p.images[0] || '',
+    id: p.id, name: p.name, art: p.art, tint: p.colors ? p.colors[sel.color].hex : p.tint, img: viewer.current?.() || p.images[0] || '',
     model: p.models.length > 1 ? model.name : '', option: opt && !['Estándar'].includes(opt.label) ? opt.label : '',
     color: p.colors ? p.colors[sel.color].name : '', price: opt?.price ?? null, currency: p.currency,
   });
-  flyToBag(document.getElementById('stage'), p.art, p.colors ? p.colors[sel.color].hex : p.tint, p.images[0]);
+  flyToBag(document.getElementById('stage'), p.art, p.colors ? p.colors[sel.color].hex : p.tint, viewer.current?.() || p.images[0]);
   setTimeout(() => toast(`Agregado a tu bolsa. <button type="button" data-open-bag>Ver bolsa</button>`), 700);
   if (!reduced) gsap.fromTo(btn, { scale: 0.94 }, { scale: 1, duration: 0.6, ease: 'elastic.out(1,.4)' });
 }
 
-// ── Gallery (real photos from the Bencar catalogue) ───────────────────────
+// ── Rotating gallery (official Apple photos, several angles) ─────────────
+// Auto-advances through the angles like a turntable; drag sideways to spin it
+// yourself; picking a colour swaps in that finish's photo set.
 const viewer = {};
 function pulse() { viewer.spin?.(); }
+const imagesFor = () => (p.colorImages && p.colorImages[sel.color]?.length ? p.colorImages[sel.color] : p.images);
 
 function mountViewer() {
   const stageEl = document.getElementById('stage');
   const thumbs = document.getElementById('thumbs');
-  const imgs = p.images.length ? p.images : [null];
+  let imgs = imagesFor().length ? imagesFor() : [null];
   let current = 0;
   const node = (src) => (src
-    ? `<img src="${src}" alt="${p.name}" decoding="async"/>`
+    ? `<img src="${src}" alt="${p.name}" decoding="async" draggable="false"/>`
     : art(p.art, p.colors ? p.colors[sel.color].hex : p.tint));
+  const drawThumbs = () => {
+    thumbs.innerHTML = imgs.length > 1 ? imgs.map((src, i) => `<button type="button" role="tab" aria-label="Vista ${i + 1}" aria-current="${i === current}" data-i="${i}"><img src="${src}" alt=""/></button>`).join('') : '';
+  };
   stageEl.innerHTML = node(imgs[0]);
-  thumbs.innerHTML = imgs.length > 1 ? imgs.map((src, i) => `<button type="button" role="tab" aria-label="Foto ${i + 1}" aria-current="${i === 0}" data-i="${i}"><img src="${src}" alt=""/></button>`).join('') : '';
+  drawThumbs();
+  // Warm the cache so the spin never waits on the network.
+  const preload = () => imgs.forEach((src) => { if (src) { const im = new Image(); im.src = src; } });
+  preload();
 
-  const show = (i) => {
-    if (i === current) return;
-    const dir = i > current ? 1 : -1;
+  const show = (i, dir = 1, fast = false) => {
+    if (i === current && !fast) return;
     current = i;
-    const old = stageEl.firstElementChild;
+    const old = stageEl.lastElementChild;
     stageEl.insertAdjacentHTML('beforeend', node(imgs[i]));
     const next = stageEl.lastElementChild;
     thumbs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', String(Number(b.dataset.i) === i)));
-    if (reduced) { old.remove(); return; }
-    gsap.fromTo(next, { xPercent: 30 * dir, opacity: 0, scale: 0.92, rotationY: -25 * dir, transformPerspective: 1000 }, { xPercent: 0, opacity: 1, scale: 1, rotationY: 0, duration: 0.9, ease: 'expo.out' });
-    gsap.to(old, { xPercent: -30 * dir, opacity: 0, scale: 0.92, duration: 0.6, ease: 'expo.out', onComplete: () => old.remove() });
+    if (reduced) { [...stageEl.children].slice(0, -1).forEach((n) => n.remove()); return; }
+    const d = fast ? 0.45 : 0.9;
+    gsap.fromTo(next, { xPercent: 22 * dir, opacity: 0, scale: 0.94, rotationY: -35 * dir, transformPerspective: 1000 }, { xPercent: 0, opacity: 1, scale: 1, rotationY: 0, duration: d, ease: 'expo.out' });
+    gsap.to(old, { xPercent: -22 * dir, opacity: 0, scale: 0.94, rotationY: 35 * dir, transformPerspective: 1000, duration: d * 0.7, ease: 'expo.out', onComplete: () => old.remove() });
   };
-  thumbs.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) show(Number(b.dataset.i)); });
-  // swipe
-  let sx = null;
-  stageEl.addEventListener('pointerdown', (e) => { sx = e.clientX; });
-  stageEl.addEventListener('pointerup', (e) => {
-    if (sx == null) return; const dx = e.clientX - sx; sx = null;
-    if (Math.abs(dx) > 40 && imgs.length > 1) show((current + (dx < 0 ? 1 : imgs.length - 1)) % imgs.length);
-  });
+  const step = (dir) => show((current + dir + imgs.length) % imgs.length, dir);
 
-  if (!reduced) {
-    gsap.from(stageEl.firstElementChild, { y: 80, opacity: 0, scale: 0.9, duration: 1.4, ease: 'expo.out', delay: 0.3 });
-    // 3D tilt following the pointer
-    stageEl.addEventListener('pointermove', (e) => {
-      const r = stageEl.getBoundingClientRect();
-      gsap.to(stageEl.lastElementChild, { rotationY: ((e.clientX - r.left) / r.width - 0.5) * 18, rotationX: (0.5 - (e.clientY - r.top) / r.height) * 12, transformPerspective: 1000, duration: 0.8, ease: 'power3' });
-    });
-    stageEl.addEventListener('pointerleave', () => gsap.to(stageEl.lastElementChild, { rotationX: 0, rotationY: 0, duration: 1, ease: 'expo.out' }));
-  }
-  viewer.setTint = (hex) => { if (!p.images.length) stageEl.lastElementChild.outerHTML = art(p.art, hex); };
-  viewer.spin = () => {
-    // jump to the model's photo when there is one per model (e.g. iPhone 18 DUO)
-    if (p.id === 'iphone-18' && imgs.length > 1) show(sel.model === 2 ? 1 : 0);
-    else if (!reduced) gsap.fromTo(stageEl.lastElementChild, { scale: 0.94 }, { scale: 1, duration: 0.9, ease: 'elastic.out(1,.5)' });
+  // Turntable: advance every few seconds while the gallery is on screen and idle.
+  let timer = null, visible = true, hold = false;
+  const tick = () => { if (visible && !hold && !document.hidden && imgs.length > 1) step(1); };
+  const play = () => { clearInterval(timer); if (!reduced) timer = setInterval(tick, 2600); };
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(stageEl);
+  stageEl.addEventListener('pointerenter', () => { hold = true; });
+  stageEl.addEventListener('pointerleave', () => { hold = false; });
+
+  thumbs.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) { const i = Number(b.dataset.i); show(i, i > current ? 1 : -1); play(); } });
+  // Drag to spin: every ~70px of horizontal drag turns to the next angle.
+  let sx = null, moved = 0;
+  stageEl.addEventListener('pointerdown', (e) => { sx = e.clientX; moved = 0; hold = true; stageEl.setPointerCapture?.(e.pointerId); });
+  stageEl.addEventListener('pointermove', (e) => {
+    if (sx == null || imgs.length < 2) return;
+    const dx = e.clientX - sx;
+    if (Math.abs(dx) > 70) { step(dx < 0 ? 1 : -1); sx = e.clientX; moved++; }
+  });
+  const end = () => { sx = null; hold = false; play(); };
+  stageEl.addEventListener('pointerup', end);
+  stageEl.addEventListener('pointercancel', end);
+  stageEl.insertAdjacentHTML('afterend', imgs.length > 1 ? '<p class="gallery__hint">Arrastra para girar</p>' : '');
+
+  if (!reduced) gsap.from(stageEl.firstElementChild, { y: 80, opacity: 0, scale: 0.9, duration: 1.4, ease: 'expo.out', delay: 0.3 });
+  play();
+
+  viewer.setColor = () => {
+    const next = imagesFor();
+    if (!next.length) { stageEl.lastElementChild.outerHTML = art(p.art, p.colors[sel.color].hex); return; }
+    imgs = next; preload(); drawThumbs(); show(0, 1, true); play();
   };
+  viewer.spin = () => { if (!reduced) gsap.fromTo(stageEl.lastElementChild, { scale: 0.94 }, { scale: 1, duration: 0.9, ease: 'elastic.out(1,.5)' }); };
+  viewer.current = () => imgs[current] || p.images[0];
 }
 
 // ── Related ───────────────────────────────────────────────────────────────

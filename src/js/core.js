@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { mountLayout, LOGO } from './layout.js';
 import { art } from './art.js';
+import { mountKleber } from './kleber/chat.js';
 
 gsap.registerPlugin(ScrollTrigger);
 export { gsap, ScrollTrigger };
@@ -107,8 +108,12 @@ function transitions() {
   curtain.innerHTML = `<div class="curtain__logo">${LOGO}</div>`;
   document.body.append(curtain);
   if (reduced) return;
-  // Enter
-  gsap.fromTo(curtain, { yPercent: 0 }, { yPercent: -100, duration: 0.9, ease: 'expo.inOut', delay: 0.05 });
+  // Enter: only after an in-site navigation, and never on the home page,
+  // which opens straight into its logo animation.
+  const fromSite = document.referrer && new URL(document.referrer).origin === location.origin;
+  if (fromSite && !document.body.classList.contains('home')) {
+    gsap.fromTo(curtain, { yPercent: 0 }, { yPercent: -100, duration: 0.9, ease: 'expo.inOut', delay: 0.05 });
+  }
   // Leave
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]');
@@ -172,6 +177,7 @@ export function boot() {
   });
   lockObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   transitions();
+  mountKleber();
 }
 
 /** Call after page content is rendered. */
