@@ -48,7 +48,11 @@ ${servicesText}`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
-  const key = process.env.NVIDIA_API_KEY || process.env.api_key;
+  // Accept the key as pasted from NVIDIA's sample code: strip quotes, a trailing
+  // comma and a "Bearer " prefix.
+  const key = (process.env.NVIDIA_API_KEY || process.env.api_key || '')
+    .trim().replace(/^api_key\s*=\s*/i, '').replace(/,$/, '').replace(/^["'`]|["'`]$/g, '')
+    .replace(/^Bearer\s+/i, '').trim();
   if (!key) { res.status(503).json({ error: 'not configured' }); return; }
 
   let body = req.body || {};
@@ -77,7 +81,12 @@ export default async function handler(req, res) {
       }),
       signal: ctrl.signal,
     });
-    if (!r.ok) { res.status(r.status === 429 ? 429 : 502).json({ error: `upstream ${r.status}` }); return; }
+    if (!r.ok) {
+      if (r.status === 401 || r.status === 403) {
+        // Shape only, never the key itself.
+        console.error(`kleber: NVIDIA rejected the key (${r.status}); length ${key.length}, starts with nvapi-: ${key.startsWith('nvapi-')}, placeholder: ${key.includes('$')}`);
+      }
+      res.status(r.status === 429 ? 429 : 502).json({ error: `upstream ${r.status}` }); return; }
     const data = await r.json();
     // Reasoning models may include their thinking in <think> tags: keep only the answer.
     const reply = String(data?.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
