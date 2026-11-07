@@ -7,6 +7,8 @@
 // To update the store, edit this file only.
 // ---------------------------------------------------------------------------
 
+import { IMAGES } from './images.js';
+
 export const CATALOG_DATE = 'Octubre 2026';
 
 export const categories = [
@@ -201,6 +203,8 @@ export const products = [
   { id: 'dyson-supersonic', cat: 'dyson', name: 'Dyson Supersonic', art: 'dyson', tint: '#5b4a8a', currency: 'USD', tagline: 'Secado rápido, sin calor extremo.', models: [{ name: 'Supersonic', options: [o('Consultar', null)] }] },
   { id: 'dyson-airstrait', cat: 'dyson', name: 'Dyson Airstrait', art: 'dyson', tint: '#c06a3c', currency: 'USD', tagline: 'Seca y alisa al mismo tiempo.', models: [{ name: 'Airstrait', options: [o('Consultar', null)] }] },
 ];
+
+products.forEach((p) => { p.images = IMAGES[p.id] || []; });
 
 export const services = [
   {

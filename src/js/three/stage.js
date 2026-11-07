@@ -25,7 +25,7 @@ export function createStage(container, { fov = 30, z = 10, alpha = true, exposur
   camera.position.set(0, 0, z);
 
   const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(4, 6, 6);
-  const rim = new THREE.DirectionalLight(0x9cc3ff, 2.4); rim.position.set(-6, 2, -4);
+  const rim = new THREE.DirectionalLight(0xffffff, 2.2); rim.position.set(-6, 2, -4);
   scene.add(key, rim, new THREE.AmbientLight(0xffffff, 0.25));
 
   const tickers = new Set();

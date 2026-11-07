@@ -10,7 +10,7 @@ function shade(hex, amt) {
   return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
 }
 
-const wallpaper = (id, a = '#1f3a5f', b = '#6aa7ff', c = '#ffb38a') => `
+const wallpaper = (id, a = '#1c1c1e', b = '#636366', c = '#a1a1a6') => `
   <linearGradient id="w${id}" x1="0" y1="0" x2="1" y2="1">
     <stop offset="0" stop-color="${a}"/><stop offset=".55" stop-color="${b}"/><stop offset="1" stop-color="${c}"/>
   </linearGradient>`;
@@ -33,7 +33,7 @@ const lens = (x, y, r) => `
   <circle cx="${x}" cy="${y}" r="${r}" fill="#1b1d22"/>
   <circle cx="${x}" cy="${y}" r="${r * 0.72}" fill="#0b0c10" stroke="#3a3f4a" stroke-width="2"/>
   <circle cx="${x}" cy="${y}" r="${r * 0.38}" fill="#1e2b45"/>
-  <circle cx="${x - r * 0.25}" cy="${y - r * 0.25}" r="${r * 0.14}" fill="#9fc1ff" opacity=".7"/>`;
+  <circle cx="${x - r * 0.25}" cy="${y - r * 0.25}" r="${r * 0.14}" fill="#a1a1a6" opacity=".7"/>`;
 
 const ART = {
   phone: (id, t) => `

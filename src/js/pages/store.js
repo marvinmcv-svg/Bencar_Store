@@ -1,6 +1,6 @@
 import { boot, ready, gsap, ScrollTrigger, lenis, reduced, tilt } from '../core.js';
 import { waLink } from '../../config.js';
-import { categories, byCat } from '../../data/catalog.js';
+import { categories, byCat, byId } from '../../data/catalog.js';
 import { art } from '../art.js';
 import { shelf, wireShelves } from '../cards.js';
 import { LOGO } from '../layout.js';
@@ -10,9 +10,12 @@ boot();
 document.getElementById('mini-logo').innerHTML = LOGO;
 document.querySelector('[data-wa]').href = waLink('¡Hola Bencar! Necesito ayuda para elegir un producto.');
 
-const RAIL_TINT = { iphone: '#5b7a99', mac: '#c7d3de', ipad: '#9fb4cc', watch: '#2d3137', fundas: '#c97b63', dyson: '#b3485f' };
-document.getElementById('rail').innerHTML = categories.map((c) =>
-  `<a href="#${c.id}">${art(c.art, RAIL_TINT[c.id])}<span>${c.name}</span></a>`).join('');
+const RAIL_TINT = { fundas: '#2c2c2e', dyson: '#3a3a3c' };
+const RAIL_IMG = { iphone: 'iphone-17', mac: 'macbook-air', ipad: 'ipad-air', watch: 'watch-ultra-3', airpods: 'airpods-pro-3', accesorios: 'airtag', anker: 'anker-nano-pro-20', protectores: null };
+document.getElementById('rail').innerHTML = categories.map((c) => {
+  const src = RAIL_IMG[c.id] && byId(RAIL_IMG[c.id])?.images[0];
+  return `<a href="#${c.id}">${src ? `<img src="${src}" alt="" loading="lazy"/>` : art(c.art, RAIL_TINT[c.id])}<span>${c.name}</span></a>`;
+}).join('');
 
 const filters = document.getElementById('filters');
 filters.innerHTML = [`<button class="chip" aria-pressed="true" data-f="all">Todo</button>`,

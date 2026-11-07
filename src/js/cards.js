@@ -1,5 +1,5 @@
 import { fmt, fromPrice } from '../data/catalog.js';
-import { art } from './art.js';
+import { thumb } from './layout.js';
 
 const chev = (d) => `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${d === 'l' ? 'M10 3 5 8l5 5' : 'M6 3l5 5-5 5'}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
@@ -12,7 +12,7 @@ export function productCard(p) {
     <span class="pcard__badge">${p.badge || ''}</span>
     <h3>${p.name}</h3>
     <p>${p.tagline}</p>
-    <div class="pcard__art">${art(p.art, p.tint)}</div>
+    <div class="pcard__art">${thumb(p)}</div>
     ${p.colors ? `<div class="pcard__swatches">${p.colors.map((c) => `<i style="background:${c.hex}" title="${c.name}"></i>`).join('')}</div>` : ''}
     <div class="pcard__foot">
       <span class="pcard__price">${from != null ? `Desde <strong>${fmt(from, p.currency)}</strong>` : '<strong>Consultar precio</strong>'}</span>

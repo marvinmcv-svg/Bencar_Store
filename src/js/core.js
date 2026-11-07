@@ -136,13 +136,13 @@ export function toast(html) {
 }
 
 /** Flies a product thumbnail into the bag icon. */
-export function flyToBag(fromEl, type, tint) {
+export function flyToBag(fromEl, type, tint, img) {
   const target = document.querySelector('.bag-btn');
   if (!fromEl || !target || reduced) return;
   const a = fromEl.getBoundingClientRect(), b = target.getBoundingClientRect();
   const ghost = document.createElement('div');
   ghost.className = 'ghost';
-  ghost.innerHTML = art(type, tint);
+  ghost.innerHTML = img ? `<img src="${img}" alt=""/>` : art(type, tint);
   Object.assign(ghost.style, { left: `${a.left + a.width / 2 - 60}px`, top: `${a.top + a.height / 2 - 60}px` });
   document.body.append(ghost);
   gsap.timeline({ onComplete: () => ghost.remove() })

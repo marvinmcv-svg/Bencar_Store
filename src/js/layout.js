@@ -4,11 +4,12 @@ import { categories, products, fmt, fromPrice, CATALOG_DATE } from '../data/cata
 import { bag } from './cart.js';
 import { art } from './art.js';
 
-export const LOGO = `<svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
-  <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" stroke-width="4"/>
-  <path d="M36 22 V64 A16 16 0 1 0 52 48 H44" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
-  <path d="M60 58 A8 8 0 1 0 60 70" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
-</svg>`;
+import { logoSVG } from './brand.js';
+
+export const LOGO = logoSVG({ ring: 'icon' });
+export const thumb = (p) => (p.images && p.images[0]
+  ? `<img src="${p.images[0]}" alt="" loading="lazy" decoding="async"/>`
+  : art(p.art, p.tint));
 
 const I = {
   search: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -89,7 +90,7 @@ export function mountLayout() {
   footer.innerHTML = `
     <div class="wrap">
       <div class="gfoot__top">
-        <a class="gfoot__brand" href="/">${LOGO}<span>${CONFIG.brand}</span></a>
+        <a class="gfoot__brand" href="/"><img src="/brand/bencar-logo-black.jpg" alt="Logo BenCar Productos Apple" width="84" height="84" loading="lazy"/><span>${CONFIG.brand}</span></a>
         <p>${CONFIG.tagline}. Catálogo ${CATALOG_DATE}. Precios sujetos a cambio y disponibilidad.</p>
       </div>
       <div class="gfoot__cols">
@@ -102,7 +103,7 @@ export function mountLayout() {
           <li><a href="/servicios.html#vehiculos">Venta de vehículos</a></li>
           <li><a href="/servicios.html#dinamicas">Dinámicas Bencar</a></li></ul></div>
         <div><h3>Contacto</h3><ul>
-          <li><a href="tel:${CONFIG.phoneTel}">${CONFIG.phoneDisplay}</a></li>
+          ${CONFIG.phones.map((ph) => `<li><a href="tel:${ph.tel}">${ph.display}</a></li>`).join('')}
           <li><a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></li>
           <li><a href="${CONFIG.instagram}" target="_blank" rel="noopener">Instagram ${CONFIG.instagramHandle}</a></li>
           <li>${CONFIG.country}</li></ul></div>
@@ -170,7 +171,7 @@ function wireBag(drawer) {
     checkout.toggleAttribute('aria-disabled', !items.length);
     list.innerHTML = items.length ? items.map((i) => `
       <article class="line">
-        <div class="line__art">${art(i.art, i.tint)}</div>
+        <div class="line__art">${i.img ? `<img src="${i.img}" alt=""/>` : art(i.art, i.tint)}</div>
         <div class="line__info">
           <h3>${i.name}</h3>
           <p>${[i.model, i.option, i.color].filter(Boolean).join(' · ')}</p>
@@ -213,7 +214,7 @@ function wireSearch(el) {
     }
     const hits = products.filter((p) => norm(`${p.name} ${p.tagline} ${p.cat}`).includes(q)).slice(0, 8);
     results.innerHTML = hits.length
-      ? `<p class="search__label">Productos</p><ul class="search__hits">${hits.map((p) => `<li><a href="/producto.html?id=${p.id}"><span class="search__art">${art(p.art, p.tint)}</span><span><strong>${p.name}</strong><em>${fromPrice(p) ? `Desde ${fmt(fromPrice(p), p.currency)}` : 'Consultar precio'}</em></span></a></li>`).join('')}</ul>`
+      ? `<p class="search__label">Productos</p><ul class="search__hits">${hits.map((p) => `<li><a href="/producto.html?id=${p.id}"><span class="search__art">${thumb(p)}</span><span><strong>${p.name}</strong><em>${fromPrice(p) ? `Desde ${fmt(fromPrice(p), p.currency)}` : 'Consultar precio'}</em></span></a></li>`).join('')}</ul>`
       : `<p class="search__label">Sin resultados para “${input.value}”.</p>`;
   };
   input.addEventListener('input', render);

@@ -5,8 +5,6 @@ import { art } from '../art.js';
 import { shelf, wireShelves } from '../cards.js';
 import { bag } from '../cart.js';
 import { ICONS } from '../layout.js';
-import { createStage, webglOK } from '../three/stage.js';
-import { MAKERS } from '../three/devices.js';
 
 boot();
 
@@ -103,71 +101,66 @@ function addToBag(btn) {
   const model = p.models[sel.model];
   const opt = model.options[sel.option];
   bag.add({
-    id: p.id, name: p.name, art: p.art, tint: p.colors ? p.colors[sel.color].hex : p.tint,
+    id: p.id, name: p.name, art: p.art, tint: p.colors ? p.colors[sel.color].hex : p.tint, img: p.images[0] || '',
     model: p.models.length > 1 ? model.name : '', option: opt && !['Estándar'].includes(opt.label) ? opt.label : '',
     color: p.colors ? p.colors[sel.color].name : '', price: opt?.price ?? null, currency: p.currency,
   });
-  flyToBag(document.getElementById('viewer'), p.art, p.colors ? p.colors[sel.color].hex : p.tint);
+  flyToBag(document.getElementById('stage'), p.art, p.colors ? p.colors[sel.color].hex : p.tint, p.images[0]);
   setTimeout(() => toast(`Agregado a tu bolsa. <button type="button" data-open-bag>Ver bolsa</button>`), 700);
   if (!reduced) gsap.fromTo(btn, { scale: 0.94 }, { scale: 1, duration: 0.6, ease: 'elastic.out(1,.4)' });
 }
 
-// ── Viewer ────────────────────────────────────────────────────────────────
-const viewerEl = document.getElementById('viewer');
+// ── Gallery (real photos from the Bencar catalogue) ───────────────────────
 const viewer = {};
 function pulse() { viewer.spin?.(); }
 
 function mountViewer() {
-  const maker = MAKERS[p.art];
-  const tint = p.colors ? p.colors[sel.color].hex : (p.tint || '#c9ccd2');
-  if (maker && webglOK()) {
-    const stage = createStage(viewerEl, { fov: 28, z: p.art === 'laptop' ? 13 : 10.5, exposure: 1.0 });
-    const obj = maker({ color: tint });
-    stage.scene.add(obj);
-    const fit = { phone: 1.15, tablet: 1.05, laptop: 0.95, watch: 1.0, buds: 1.25 }[p.art] || 1;
-    obj.scale.setScalar(fit);
-    const rot = { x: p.art === 'laptop' ? 0.35 : 0.1, y: -0.5, vx: 0, vy: 0.004 };
-    let dragging = false, lx = 0, ly = 0;
-    viewerEl.addEventListener('pointerdown', (e) => { dragging = true; lx = e.clientX; ly = e.clientY; viewerEl.setPointerCapture(e.pointerId); });
-    viewerEl.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      rot.vy = (e.clientX - lx) * 0.008; rot.vx = (e.clientY - ly) * 0.004; lx = e.clientX; ly = e.clientY;
+  const stageEl = document.getElementById('stage');
+  const thumbs = document.getElementById('thumbs');
+  const imgs = p.images.length ? p.images : [null];
+  let current = 0;
+  const node = (src) => (src
+    ? `<img src="${src}" alt="${p.name}" decoding="async"/>`
+    : art(p.art, p.colors ? p.colors[sel.color].hex : p.tint));
+  stageEl.innerHTML = node(imgs[0]);
+  thumbs.innerHTML = imgs.length > 1 ? imgs.map((src, i) => `<button type="button" role="tab" aria-label="Foto ${i + 1}" aria-current="${i === 0}" data-i="${i}"><img src="${src}" alt=""/></button>`).join('') : '';
+
+  const show = (i) => {
+    if (i === current) return;
+    const dir = i > current ? 1 : -1;
+    current = i;
+    const old = stageEl.firstElementChild;
+    stageEl.insertAdjacentHTML('beforeend', node(imgs[i]));
+    const next = stageEl.lastElementChild;
+    thumbs.querySelectorAll('button').forEach((b) => b.setAttribute('aria-current', String(Number(b.dataset.i) === i)));
+    if (reduced) { old.remove(); return; }
+    gsap.fromTo(next, { xPercent: 30 * dir, opacity: 0, scale: 0.92, rotationY: -25 * dir, transformPerspective: 1000 }, { xPercent: 0, opacity: 1, scale: 1, rotationY: 0, duration: 0.9, ease: 'expo.out' });
+    gsap.to(old, { xPercent: -30 * dir, opacity: 0, scale: 0.92, duration: 0.6, ease: 'expo.out', onComplete: () => old.remove() });
+  };
+  thumbs.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) show(Number(b.dataset.i)); });
+  // swipe
+  let sx = null;
+  stageEl.addEventListener('pointerdown', (e) => { sx = e.clientX; });
+  stageEl.addEventListener('pointerup', (e) => {
+    if (sx == null) return; const dx = e.clientX - sx; sx = null;
+    if (Math.abs(dx) > 40 && imgs.length > 1) show((current + (dx < 0 ? 1 : imgs.length - 1)) % imgs.length);
+  });
+
+  if (!reduced) {
+    gsap.from(stageEl.firstElementChild, { y: 80, opacity: 0, scale: 0.9, duration: 1.4, ease: 'expo.out', delay: 0.3 });
+    // 3D tilt following the pointer
+    stageEl.addEventListener('pointermove', (e) => {
+      const r = stageEl.getBoundingClientRect();
+      gsap.to(stageEl.lastElementChild, { rotationY: ((e.clientX - r.left) / r.width - 0.5) * 18, rotationX: (0.5 - (e.clientY - r.top) / r.height) * 12, transformPerspective: 1000, duration: 0.8, ease: 'power3' });
     });
-    const up = () => { dragging = false; };
-    viewerEl.addEventListener('pointerup', up); viewerEl.addEventListener('pointercancel', up);
-    stage.onTick((t) => {
-      rot.y += rot.vy; rot.x = Math.max(-0.6, Math.min(0.9, rot.x + rot.vx));
-      if (!dragging) { rot.vy += ((reduced ? 0 : 0.004) - rot.vy) * 0.04; rot.vx *= 0.9; }
-      obj.rotation.set(rot.x, rot.y, 0);
-      obj.position.y = Math.sin(t * 1.3) * 0.06 - (p.art === 'laptop' ? 0.4 : 0);
-      if (obj.userData.setOpen && p.art === 'buds') obj.userData.setOpen(0.55 + Math.sin(t * 0.9) * 0.3);
-    });
-    const target = new stage.THREE.Color(tint);
-    stage.onTick(() => {
-      obj.traverse((m) => { if (m.isMesh && m.userData.tintable) m.material.color.lerp(target, 0.1); });
-    });
-    const base = new stage.THREE.Color(tint).getHex();
-    obj.traverse((m) => {
-      if (m.isMesh && m.material?.color?.getHex() === base) m.userData.tintable = true;
-    });
-    viewer.setTint = (hex) => target.set(hex);
-    viewer.spin = () => { if (!reduced) gsap.to(rot, { y: rot.y + Math.PI * 2, duration: 1.4, ease: 'expo.inOut' }); };
-    if (!reduced) gsap.from(obj.scale, { x: 0.01, y: 0.01, z: 0.01, duration: 1.6, ease: 'expo.out', delay: 0.4 });
-  } else {
-    viewerEl.insertAdjacentHTML('afterbegin', art(p.art, tint));
-    viewerEl.querySelector('.pdp__hint')?.remove();
-    const svg = viewerEl.querySelector('.art');
-    if (!reduced) {
-      gsap.from(svg, { y: 80, opacity: 0, scale: 0.9, duration: 1.4, ease: 'expo.out', delay: 0.3 });
-      gsap.to(svg, { y: -12, duration: 2.6, ease: 'sine.inOut', yoyo: true, repeat: -1 });
-      viewerEl.addEventListener('pointermove', (e) => {
-        const r = viewerEl.getBoundingClientRect();
-        gsap.to(svg, { rotationY: ((e.clientX - r.left) / r.width - 0.5) * 24, rotationX: (0.5 - (e.clientY - r.top) / r.height) * 18, transformPerspective: 900, duration: 0.8, ease: 'power3' });
-      });
-    }
-    viewer.setTint = (hex) => { viewerEl.querySelector('.art').outerHTML = art(p.art, hex); };
-    viewer.spin = () => { const s = viewerEl.querySelector('.art'); if (!reduced) gsap.fromTo(s, { rotationY: -180, opacity: 0 }, { rotationY: 0, opacity: 1, duration: 1, ease: 'expo.out' }); };
+    stageEl.addEventListener('pointerleave', () => gsap.to(stageEl.lastElementChild, { rotationX: 0, rotationY: 0, duration: 1, ease: 'expo.out' }));
   }
+  viewer.setTint = (hex) => { if (!p.images.length) stageEl.lastElementChild.outerHTML = art(p.art, hex); };
+  viewer.spin = () => {
+    // jump to the model's photo when there is one per model (e.g. iPhone 18 DUO)
+    if (p.id === 'iphone-18' && imgs.length > 1) show(sel.model === 2 ? 1 : 0);
+    else if (!reduced) gsap.fromTo(stageEl.lastElementChild, { scale: 0.94 }, { scale: 1, duration: 0.9, ease: 'elastic.out(1,.5)' });
+  };
 }
 
 // ── Related ───────────────────────────────────────────────────────────────

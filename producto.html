@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Comprar · Bencar</title>
   <meta name="description" content="Elige modelo, capacidad y color. Pide por WhatsApp en Bencar." />
+  <meta property="og:image" content="/brand/og.jpg" />
   <meta name="theme-color" content="#ffffff" />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,7 +18,7 @@
     <div class="wrap">
       <header class="pdp__head" id="pdp-head"></header>
       <div class="pdp__grid">
-        <div class="pdp__viewer" id="viewer" aria-label="Vista 3D del producto"><span class="pdp__hint">Arrastra para girar</span></div>
+        <div class="gallery" id="viewer"><div class="gallery__stage" id="stage" aria-live="polite"></div><div class="gallery__thumbs" id="thumbs" role="tablist" aria-label="Fotos del producto"></div></div>
         <form class="pdp__form" id="pdp-form" onsubmit="return false"></form>
       </div>
     </div>

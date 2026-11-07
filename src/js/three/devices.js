@@ -1,20 +1,30 @@
 // Procedural 3D devices built from primitives — no model files to download.
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { MARK, MARK_CENTER } from '../brand.js';
 
-export function screenTexture({ w = 512, h = 1100, title = 'Bencar', sub = 'Productos Apple y más', radius = 70 } = {}) {
+function drawMark(g, cx, cy, size) {
+  const [mx, my] = MARK_CENTER;
+  const k = size / 7.2;
+  g.save(); g.translate(cx, cy); g.beginPath();
+  MARK.forEach(([x, y], i) => { const px = (x - mx) * k, py = -(y - my) * k; i ? g.lineTo(px, py) : g.moveTo(px, py); });
+  g.closePath(); g.fill();
+  g.lineWidth = size * 0.035; g.beginPath(); g.arc(0, 0, size * 0.48, 0, Math.PI * 2); g.stroke(); g.restore();
+}
+
+export function screenTexture({ w = 512, h = 1100, title = 'BenCar', sub = 'Productos Apple y más', radius = 70 } = {}) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, '#0b1a2e');
-  grad.addColorStop(0.45, '#1f3a5f');
-  grad.addColorStop(0.75, '#4b7bd1');
-  grad.addColorStop(1, '#f2a679');
+  grad.addColorStop(0, '#000000');
+  grad.addColorStop(0.5, '#1c1c1e');
+  grad.addColorStop(0.8, '#48484a');
+  grad.addColorStop(1, '#8e8e93');
   g.fillStyle = grad;
   g.beginPath(); g.roundRect(0, 0, w, h, radius); g.fill();
   // soft orbs
-  for (const [x, y, r, col] of [[w * 0.2, h * 0.75, w * 0.7, 'rgba(255,170,120,.45)'], [w * 0.9, h * 0.25, w * 0.6, 'rgba(110,170,255,.5)']]) {
+  for (const [x, y, r, col] of [[w * 0.2, h * 0.8, w * 0.7, 'rgba(255,255,255,.18)'], [w * 0.9, h * 0.2, w * 0.6, 'rgba(255,255,255,.12)']]) {
     const rg = g.createRadialGradient(x, y, 0, x, y, r);
     rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = rg; g.fillRect(0, 0, w, h);
@@ -31,16 +41,19 @@ export function screenTexture({ w = 512, h = 1100, title = 'Bencar', sub = 'Prod
     // dynamic island
     g.fillStyle = '#000';
     g.beginPath(); g.roundRect(w * 0.33, h * 0.022, w * 0.34, h * 0.042, h * 0.021); g.fill();
-    g.fillStyle = '#fff';
+    g.fillStyle = '#fff'; g.strokeStyle = '#fff';
+    drawMark(g, w / 2, h * 0.58, w * 0.42);
     g.font = `700 ${w * 0.11}px Inter, system-ui, sans-serif`;
     g.fillText(title, w / 2, h * 0.86);
     g.font = `400 ${w * 0.045}px Inter, system-ui, sans-serif`;
     g.globalAlpha = 0.8; g.fillText(sub, w / 2, h * 0.9);
   } else {
-    g.font = `700 ${h * 0.16}px Inter, system-ui, sans-serif`;
-    g.fillText(title, w / 2, h * 0.52);
+    g.strokeStyle = '#fff';
+    drawMark(g, w / 2, h * 0.36, h * 0.3);
+    g.font = `700 ${h * 0.12}px Inter, system-ui, sans-serif`;
+    g.fillText(title, w / 2, h * 0.68);
     g.font = `400 ${h * 0.055}px Inter, system-ui, sans-serif`;
-    g.globalAlpha = 0.85; g.fillText(sub, w / 2, h * 0.62);
+    g.globalAlpha = 0.85; g.fillText(sub, w / 2, h * 0.76);
   }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
