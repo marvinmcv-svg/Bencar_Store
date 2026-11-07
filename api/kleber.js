@@ -1,7 +1,7 @@
 // Kleber, the Bencar AI receptionist — Vercel serverless function.
 // POST /api/kleber  { messages: [{ role: 'user' | 'assistant', content: string }] }
 // -> { reply: string }
-// Uses DeepSeek through NVIDIA's OpenAI-compatible API. Needs NVIDIA_API_KEY in the
+// Uses DeepSeek through NVIDIA's OpenAI-compatible API. Needs NVIDIA_API_KEY (or api_key) in the
 // Vercel project's environment variables; without it the chat widget falls back to
 // its built-in catalogue answers.
 import { products, categories, services, fmt, CATALOG_DATE } from '../src/data/catalog.js';
@@ -48,7 +48,7 @@ ${servicesText}`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
-  const key = process.env.NVIDIA_API_KEY;
+  const key = process.env.NVIDIA_API_KEY || process.env.api_key;
   if (!key) { res.status(503).json({ error: 'not configured' }); return; }
 
   let body = req.body || {};
