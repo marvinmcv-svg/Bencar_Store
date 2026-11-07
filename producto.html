@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Comprar · Bencar</title>
+  <meta name="description" content="Elige modelo, capacidad y color. Pide por WhatsApp en Bencar." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body class="product">
+  <main id="main" class="pdp">
+    <div class="wrap">
+      <header class="pdp__head" id="pdp-head"></header>
+      <div class="pdp__grid">
+        <div class="pdp__viewer" id="viewer" aria-label="Vista 3D del producto"><span class="pdp__hint">Arrastra para girar</span></div>
+        <form class="pdp__form" id="pdp-form" onsubmit="return false"></form>
+      </div>
+    </div>
+    <section class="section section--mist" style="padding-bottom:60px">
+      <div class="wrap section__head"><h2 class="display h-m" data-split>También te puede gustar.</h2><a class="link" href="/tienda.html">Ver la tienda ›</a></div>
+      <div id="related"></div>
+    </section>
+  </main>
+  <script type="module" src="/src/js/pages/product.js"></script>
+</body>
+</html>

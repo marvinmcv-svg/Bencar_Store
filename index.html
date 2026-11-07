@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Bencar · Productos Apple y más</title>
+  <meta name="description" content="Bencar: iPhone 18, iPhone 17, MacBook M5, iPad, Apple Watch, AirPods, accesorios y Dyson. Recibimos tu equipo como parte de pago. Servicio técnico puerta a puerta." />
+  <meta name="theme-color" content="#0a1424" />
+  <meta property="og:title" content="Bencar · Productos Apple y más" />
+  <meta property="og:description" content="Lo último de Apple al precio que estás buscando. Parte de pago, seminuevos y servicio técnico." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body class="home">
+  <main id="main">
+    <!-- HERO: scroll-scrubbed 3D -->
+    <section class="hero" aria-label="Bencar">
+      <div class="hero__sticky">
+        <div class="hero__canvas" id="hero-canvas"></div>
+        <div class="hero__copy">
+          <div>
+            <h1 class="hero__title" id="hero-title">BENCAR</h1>
+            <p class="hero__sub" id="hero-sub">Productos Apple y más</p>
+          </div>
+        </div>
+        <div class="hero__features" aria-hidden="true">
+          <div class="hero__feat hero__feat--l"><strong>Hasta 2TB</strong><span>de almacenamiento en iPhone 18 Pro, Pro Max y DUO.</span></div>
+          <div class="hero__feat hero__feat--r"><strong>3 modelos</strong><span>18 Pro, 18 Pro Max y el nuevo 18 DUO.</span></div>
+          <div class="hero__feat hero__feat--l2"><strong>50% off</strong><span>en tu funda original Apple + protector de regalo.</span></div>
+        </div>
+        <div class="hero__stage" id="hero-stage">
+          <p class="eyebrow eyebrow--hot">Nuevo</p>
+          <h2 class="hero__kicker">iPhone 18. Ya en Bencar.</h2>
+          <p class="hero__price">Desde $1,680 · Recibimos tu iPhone en forma de pago</p>
+          <div class="hero__ctas">
+            <a class="btn" href="/producto.html?id=iphone-18">Comprar</a>
+            <a class="btn btn--ghost" style="--fg:#fff" href="#lineup">Ver modelos</a>
+          </div>
+        </div>
+        <div class="hero__scroll" id="hero-scroll"><span>Desliza</span><i></i></div>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>iPhone 18</span><span>MacBook Air M5</span><span>Apple Watch Ultra 3</span><span>AirPods Pro 3</span><span>iPad Air M3</span><span>Dyson Airwrap</span><span>Seminuevos</span>
+        <span>iPhone 18</span><span>MacBook Air M5</span><span>Apple Watch Ultra 3</span><span>AirPods Pro 3</span><span>iPad Air M3</span><span>Dyson Airwrap</span><span>Seminuevos</span>
+      </div>
+    </div>
+
+    <section class="section">
+      <div class="wrap">
+        <p class="eyebrow" data-reveal>Por qué Bencar</p>
+        <p class="statement" data-highlight style="margin-top:18px">Lo último de Apple, al precio que estás buscando. Recibimos tu equipo como parte de pago, reparamos puerta a puerta y entregamos en tiempo récord.</p>
+      </div>
+    </section>
+
+    <!-- TILES -->
+    <section aria-label="Destacados" class="tiles" id="tiles"></section>
+
+    <!-- PINNED STORY: iPhone 18 lineup -->
+    <section class="story" id="lineup" aria-label="Línea iPhone 18">
+      <div class="story__sticky">
+        <div class="story__canvas" id="story-canvas"></div>
+        <div class="story__copy" id="story-copy"></div>
+        <div class="story__progress" id="story-progress" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- MAC LID -->
+    <section class="lid" aria-label="MacBook con M5">
+      <div class="lid__sticky">
+        <div class="wrap">
+          <p class="eyebrow" data-reveal>Mac</p>
+          <h2 class="display h-l" data-split>Ábrela. Todo es posible.</h2>
+          <p class="lede" data-reveal style="margin:14px auto 0;max-width:34ch">MacBook Air y MacBook Pro con chip M5. Desde $1,575. Y más de 50 Mac seminuevas desde $200.</p>
+          <div class="hero__ctas" style="margin-top:22px" data-reveal>
+            <a class="btn" href="/producto.html?id=macbook-air">Comprar MacBook Air</a>
+            <a class="btn btn--ghost" href="/producto.html?id=mac-seminuevos">Ver seminuevas</a>
+          </div>
+        </div>
+        <div class="lid__canvas" id="lid-canvas"></div>
+      </div>
+    </section>
+
+    <!-- SHELF -->
+    <section class="section section--mist" style="padding-bottom:60px">
+      <div class="wrap section__head">
+        <h2 class="display h-l" data-split>Lo más buscado.</h2>
+        <a class="link" href="/tienda.html">Ver toda la tienda ›</a>
+      </div>
+      <div id="featured"></div>
+    </section>
+
+    <!-- PERKS -->
+    <section class="section section--mist" style="padding-top:40px">
+      <div class="wrap">
+        <div class="section__head"><h2 class="display h-l" data-split>La diferencia Bencar. <span class="muted">Más razones para comprar con nosotros.</span></h2></div>
+        <div class="perks" data-stagger>
+          <article class="perk">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 15h20l-5-5M32 25H12l5 5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3>Tu equipo como parte de pago.</h3><p>Recibimos tu iPhone, iPad, Mac o Apple Watch. Te ayudamos a venderlo gratis por tu compra.</p>
+          </article>
+          <article class="perk">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M24 8a8 8 0 0 0-7.4 11L8 27.6a2.8 2.8 0 0 0 4 4l8.6-8.6A8 8 0 0 0 31 16l-5 1-3-3 1-5z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+            <h3>Servicio técnico puerta a puerta.</h3><p>Cotizamos, recogemos, reparamos y te lo devolvemos. Tú no te mueves.</p>
+          </article>
+          <article class="perk">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 6l4 8.5 9 1.2-6.6 6.2 1.7 9L20 26.6 11.9 31l1.7-9L7 15.7l9-1.2z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+            <h3>Seminuevos en perfecto estado.</h3><p>Más de 50 MacBooks, iMacs y más desde $200. Consulta por iPhone, iPad y Watch.</p>
+          </article>
+          <article class="perk">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 12h20v14H4zM24 17h7l5 5v4h-12z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="11" cy="29" r="3" fill="#fff" stroke="currentColor" stroke-width="2.4"/><circle cx="29" cy="29" r="3" fill="#fff" stroke="currentColor" stroke-width="2.4"/></svg>
+            <h3>Entrega en tiempo récord.</h3><p>Pide por WhatsApp y coordinamos la entrega o el retiro.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICE STEPS -->
+    <section class="section section--navy on-dark" id="servicio">
+      <div class="wrap center">
+        <p class="eyebrow" style="color:#9fc1ff" data-reveal>Servicio Técnico</p>
+        <h2 class="display h-xl" data-split>Tú llamas. Nosotros nos encargamos.</h2>
+        <p class="lede muted" data-reveal style="margin-top:18px">Porque tu tiempo vale, reparamos tu dispositivo en un proceso rápido y sencillo.</p>
+        <div class="steps" id="steps">
+          <div class="steps__bar"></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M7 4h11l5 5v15H7z M18 4v5h5 M11 15h8 M11 19h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><h3>Cotización</h3><p>Te decimos el costo exacto.</p></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 9h14v10H3zM17 12h5l3 3v4h-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="8" cy="21" r="2" fill="currentColor"/><circle cx="21" cy="21" r="2" fill="currentColor"/></svg></div><h3>Recolección</h3><p>Pasamos por tu equipo.</p></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M17 5a6 6 0 0 0-5.6 8L5 19.4a2 2 0 0 0 3 3l6.4-6.4A6 6 0 0 0 22 11l-3.5.7-2.2-2.2L17 5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><h3>Reparación</h3><p>Rápida y con garantía.</p></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M5 14l6 6L23 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Envío</h3><p>De vuelta en tus manos.</p></div>
+        </div>
+        <div style="margin-top:48px" data-reveal><a class="btn btn--light" href="/servicios.html#servicio-tecnico">Cotizar mi reparación</a></div>
+      </div>
+    </section>
+
+    <!-- BENTO -->
+    <section class="section">
+      <div class="wrap">
+        <div class="section__head"><h2 class="display h-l" data-split>Mucho más que Apple.</h2></div>
+        <div class="bento" data-stagger>
+          <article class="b-4 bx-dark">
+            <p class="eyebrow" style="color:#ffb38a">Ben·Car · Vehículos</p>
+            <h3>¿Vendes tu auto? Lo dejamos impecable y lo vendemos en tiempo récord.</h3>
+            <ul class="ticks"><li>Detailing completo</li><li>Sesión de fotos profesional</li><li>Promoción en redes sociales</li></ul>
+            <div class="road push" aria-hidden="true"><div class="road__line"></div><svg class="road__car" id="car" viewBox="0 0 240 90"><path d="M14 62c0-10 6-16 18-18l34-6 26-20c6-4 12-6 20-6h46c10 0 18 4 26 12l18 16 18 4c8 2 12 8 12 16v6c0 4-2 6-6 6H20c-4 0-6-2-6-6z" fill="#e8ecf2"/><path d="M96 22h34v24H70zM138 22h18c6 0 10 2 14 6l16 18h-48z" fill="#1d2c44"/><circle cx="60" cy="74" r="14" fill="#111"/><circle cx="60" cy="74" r="6" fill="#9aa4b2"/><circle cx="186" cy="74" r="14" fill="#111"/><circle cx="186" cy="74" r="6" fill="#9aa4b2"/><rect x="214" y="54" width="14" height="6" rx="3" fill="#ffd27a"/></svg></div>
+          </article>
+          <article class="b-2 bx-sun">
+            <p class="eyebrow">Repuestos</p>
+            <h3>El repuesto exacto para tu vehículo.</h3>
+            <p>Cotización precisa y, si no sabes cuál necesitas, te ayudamos a identificarlo. Sin compromiso.</p>
+            <a class="link push" href="/servicios.html#repuestos">Cotizar repuesto ›</a>
+          </article>
+          <article class="b-2 bx-sky">
+            <p class="eyebrow">Plan a tu medida</p>
+            <h3>¿Presupuesto ajustado? ¡No hay problema!</h3>
+            <p>Te ayudamos a conseguir ese iPhone, iPad o Mac al precio que puedes pagar.</p>
+            <a class="link push" href="/servicios.html#presupuesto">Saber más ›</a>
+          </article>
+          <article class="b-2 bx-white">
+            <p class="eyebrow">Seminuevos</p>
+            <div class="big-num">+<span data-count="50">50</span></div>
+            <p>MacBooks, iMacs y más, desde <strong>$200</strong>. Stock limitado.</p>
+            <a class="link push" href="/producto.html?id=mac-seminuevos">Ver disponibles ›</a>
+          </article>
+          <article class="b-2 bx-navy">
+            <p class="eyebrow" style="color:#9fc1ff">Dinámicas Bencar</p>
+            <h3>Gana accesorios, iPhones, Dysons y mucho más.</h3>
+            <a class="btn btn--light push" style="align-self:flex-start" href="/servicios.html#dinamicas">Unirme al grupo</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="padding-top:0">
+      <div class="wrap">
+        <div class="cta-band" data-reveal>
+          <div class="orb" aria-hidden="true"></div>
+          <h2 class="display h-l" style="max-width:14ch;position:relative">¿Listo para tu próximo equipo?</h2>
+          <p class="lede" style="color:rgba(255,255,255,.75);max-width:40ch;position:relative">Escríbenos y te ayudamos a elegir, cotizar tu equipo usado y coordinar la entrega.</p>
+          <div class="ctas" style="position:relative">
+            <a class="btn btn--light" data-wa href="#">WhatsApp</a>
+            <a class="btn btn--ghost" style="--fg:#fff" data-ig href="#" target="_blank" rel="noopener">Instagram</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/src/js/pages/home.js"></script>
+</body>
+</html>

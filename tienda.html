@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tienda · Bencar</title>
+  <meta name="description" content="Compra iPhone, Mac, iPad, Apple Watch, AirPods, accesorios, fundas, protectores, Anker y Dyson en Bencar." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body class="store">
+  <main id="main">
+    <section class="store-hero">
+      <div class="wrap store-hero__row">
+        <h1 class="display" data-split>Tienda. <span>La mejor manera de comprar lo que amas.</span></h1>
+        <div class="store-help" data-reveal>
+          <span class="logo-mini" id="mini-logo"></span>
+          <div><strong>¿Necesitas ayuda para comprar?</strong><br /><a class="link" data-wa href="#" target="_blank" rel="noopener">Pregúntale a un especialista ›</a></div>
+        </div>
+      </div>
+    </section>
+
+    <nav class="rail" id="rail" aria-label="Categorías" data-stagger></nav>
+
+    <div class="filters" id="filters" role="toolbar" aria-label="Filtrar por categoría"></div>
+
+    <div id="sections"></div>
+
+    <section class="section section--mist" style="margin-top:60px">
+      <div class="wrap">
+        <div class="section__head"><h2 class="display h-l" data-split>La diferencia Bencar.</h2></div>
+        <div class="perks" data-stagger>
+          <article class="perk"><h3>Parte de pago</h3><p>Recibimos tu iPhone (11 o superior, libre de registro IMEI), iPad, Mac o Watch.</p></article>
+          <article class="perk"><h3>Servicio técnico</h3><p>Cotización, recolección, reparación y envío. Nos encargamos de todo.</p></article>
+          <article class="perk"><h3>Seminuevos</h3><p>Equipos en perfecto estado al precio que estás buscando.</p></article>
+          <article class="perk"><h3>Garantía</h3><p>El uso de cubo de carga genérico viola la garantía de Apple y Bencar.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/src/js/pages/store.js"></script>
+</body>
+</html>

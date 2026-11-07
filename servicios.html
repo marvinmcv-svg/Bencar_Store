@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Servicios · Bencar</title>
+  <meta name="description" content="Servicio técnico puerta a puerta, compra y venta de dispositivos, repuestos y venta de vehículos con Bencar." />
+  <meta name="theme-color" content="#0a1424" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body class="services">
+  <main id="main">
+    <section class="svc-hero">
+      <div id="svc-canvas" aria-hidden="true" style="position:absolute;inset:0"></div>
+      <div class="wrap">
+        <p class="eyebrow" style="color:#9fc1ff" data-reveal>Servicios Bencar</p>
+        <h1 class="display h-xl" data-split>Nos encargamos de todo.</h1>
+        <p class="lede" data-reveal>Reparación puerta a puerta, compra y venta de tus dispositivos, repuestos y venta de vehículos. Un solo lugar, cero complicaciones.</p>
+        <nav class="svc-index" data-stagger aria-label="Servicios">
+          <a href="#servicio-tecnico">Servicio Técnico</a>
+          <a href="#compra-venta">Compra y Venta</a>
+          <a href="#presupuesto">Plan a tu medida</a>
+          <a href="#repuestos">Repuestos</a>
+          <a href="#vehiculos">Vehículos</a>
+          <a href="#dinamicas">Dinámicas</a>
+        </nav>
+      </div>
+    </section>
+
+    <section class="section section--dark svc" id="servicio-tecnico">
+      <div class="wrap center">
+        <p class="eyebrow" style="color:#ffb38a" data-reveal>Servicio Técnico</p>
+        <h2 class="display h-xl" data-split>Tu tiempo vale.</h2>
+        <p class="statement" data-highlight style="margin:40px auto 0;font-size:clamp(24px,3.4vw,44px);max-width:28ch" id="tec-body"></p>
+        <div class="steps" id="steps">
+          <div class="steps__bar"></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M7 4h11l5 5v15H7z M18 4v5h5 M11 15h8 M11 19h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><h3>Cotización</h3><p>Te decimos el costo exacto.</p></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M3 9h14v10H3zM17 12h5l3 3v4h-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="8" cy="21" r="2" fill="currentColor"/><circle cx="21" cy="21" r="2" fill="currentColor"/></svg></div><h3>Recolección</h3><p>Pasamos por tu equipo.</p></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M17 5a6 6 0 0 0-5.6 8L5 19.4a2 2 0 0 0 3 3l6.4-6.4A6 6 0 0 0 22 11l-3.5.7-2.2-2.2L17 5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><h3>Reparación</h3><p>Rápida y confiable.</p></div>
+          <div class="step"><div class="step__dot"><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M5 14l6 6L23 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Envío</h3><p>De vuelta en tus manos.</p></div>
+        </div>
+        <div style="margin-top:56px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap" data-reveal>
+          <a class="btn btn--light" data-wa="Hola Bencar, quiero cotizar una reparación." href="#" target="_blank" rel="noopener">Cotizar por WhatsApp</a>
+          <a class="btn btn--ghost" style="--fg:#fff" data-tel href="#">Llamar</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section svc" id="compra-venta">
+      <div class="wrap">
+        <div class="bento">
+          <article class="b-4 bx-white">
+            <p class="eyebrow">Compra y Venta</p>
+            <h3 class="h-m">Tu dispositivo vale. Véndelo o úsalo como parte de pago.</h3>
+            <p class="muted">Te ayudamos a vender tu iPhone, iPad, Mac o Apple Watch, gratis por tu compra, o lo recibimos como parte de pago.</p>
+            <ul class="ticks push" id="cv-rules"></ul>
+            <a class="btn push" style="align-self:flex-start;margin-top:22px" data-wa="Hola Bencar, quiero cotizar mi dispositivo como parte de pago." href="#" target="_blank" rel="noopener">Cotizar mi equipo</a>
+          </article>
+          <article class="b-2 bx-navy" id="presupuesto" style="scroll-margin-top:80px">
+            <p class="eyebrow" style="color:#9fc1ff">Plan a tu medida</p>
+            <h3>¿Presupuesto ajustado? ¡No hay problema!</h3>
+            <p style="color:rgba(255,255,255,.75)">Te ayudamos a conseguir ese iPhone, iPad o Mac que quieres, al precio que puedes pagar. Además, recibimos cualquier dispositivo usado como parte de pago.</p>
+            <a class="btn btn--light push" style="align-self:flex-start" data-wa="Hola Bencar, tengo un presupuesto ajustado y quiero opciones." href="#" target="_blank" rel="noopener">Ver opciones</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--mist svc" id="repuestos">
+      <div class="wrap">
+        <div class="bento">
+          <article class="b-3 bx-sun">
+            <p class="eyebrow">Repuestos</p>
+            <h3 class="h-m">El repuesto exacto para tu vehículo.</h3>
+            <p>Te ofrecemos la cotización exacta del repuesto que buscas y, si no estás seguro de cuál necesitas, te ayudamos a identificarlo sin compromiso.</p>
+            <p class="push" style="font-weight:600">Entrega en tiempo récord.</p>
+            <a class="btn btn--dark" style="align-self:flex-start" data-wa="Hola Bencar, necesito cotizar un repuesto para mi vehículo." href="#" target="_blank" rel="noopener">Cotizar repuesto</a>
+          </article>
+          <article class="b-3 bx-dark" style="justify-content:flex-end;min-height:380px">
+            <svg viewBox="0 0 200 200" style="width:60%;margin:auto" aria-hidden="true" id="gear">
+              <g fill="none" stroke="#ffb38a" stroke-width="6"><circle cx="100" cy="100" r="30"/><path d="M100 30v-16M100 186v-16M30 100H14M186 100h-16M50.5 50.5 39 39M161 161l-11.5-11.5M50.5 149.5 39 161M161 39l-11.5 11.5"/><circle cx="100" cy="100" r="58" stroke="#9fc1ff" stroke-dasharray="10 12"/></g>
+            </svg>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--navy on-dark svc" id="vehiculos">
+      <div class="wrap">
+        <p class="eyebrow" style="color:#ffb38a" data-reveal>Ben·Car · Compra y Venta de vehículos</p>
+        <h2 class="display h-xl" data-split>Vende rápido. Compra seguro.</h2>
+        <p class="lede muted" data-reveal style="margin-top:18px;max-width:40ch">¿Quieres vender tu vehículo rápido y sin complicaciones? Con una comisión mínima nos encargamos de todo.</p>
+        <div class="road" aria-hidden="true" style="height:150px"><div class="road__line"></div><svg class="road__car" id="car" viewBox="0 0 240 90"><path d="M14 62c0-10 6-16 18-18l34-6 26-20c6-4 12-6 20-6h46c10 0 18 4 26 12l18 16 18 4c8 2 12 8 12 16v6c0 4-2 6-6 6H20c-4 0-6-2-6-6z" fill="#e8ecf2"/><path d="M96 22h34v24H70zM138 22h18c6 0 10 2 14 6l16 18h-48z" fill="#1d2c44"/><circle cx="60" cy="74" r="14" fill="#111"/><circle cx="60" cy="74" r="6" fill="#9aa4b2"/><circle cx="186" cy="74" r="14" fill="#111"/><circle cx="186" cy="74" r="6" fill="#9aa4b2"/><rect x="214" y="54" width="14" height="6" rx="3" fill="#ffd27a"/></svg></div>
+        <div class="bento" style="margin-top:20px" data-stagger>
+          <article class="b-3" style="background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)">
+            <p class="eyebrow" style="color:#9fc1ff">Si vendes</p>
+            <h3>Te ofrecemos:</h3>
+            <ul class="ticks" id="sell"></ul>
+          </article>
+          <article class="b-3" style="background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)">
+            <p class="eyebrow" style="color:#9fc1ff">Si compras</p>
+            <h3>Te asesoramos:</h3>
+            <ul class="ticks" id="buy"></ul>
+          </article>
+        </div>
+        <div style="margin-top:36px" data-reveal><a class="btn btn--light" data-wa="Hola Bencar, quiero vender/comprar un vehículo." href="#" target="_blank" rel="noopener">Escríbenos</a></div>
+      </div>
+    </section>
+
+    <section class="section svc" id="dinamicas">
+      <div class="wrap">
+        <div class="cta-band">
+          <div class="orb" aria-hidden="true"></div>
+          <p class="eyebrow" style="color:#ffb38a;position:relative">Dinámicas Bencar</p>
+          <h2 class="display h-l" style="max-width:16ch;position:relative" data-split>Gana accesorios, iPhones, Dysons y mucho más.</h2>
+          <p class="lede" style="color:rgba(255,255,255,.75);max-width:44ch;position:relative">Únete a nuestro grupo de WhatsApp, donde compartimos información y dinámicas para ganar premios.</p>
+          <div class="ctas" style="position:relative">
+            <a class="btn btn--light" id="group-link" href="#" target="_blank" rel="noopener">Unirme al grupo</a>
+            <a class="btn btn--ghost" style="--fg:#fff" data-ig href="#" target="_blank" rel="noopener">Seguir en Instagram</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/src/js/pages/services.js"></script>
+</body>
+</html>

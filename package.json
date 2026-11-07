@@ -1,0 +1,31 @@
+{
+  "name": "bencar-store",
+  "version": "1.0.0",
+  "description": "Bencar — Productos Apple y más. Online store.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marvinmcv-svg/Bencar_Store.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marvinmcv-svg/Bencar_Store/issues"
+  },
+  "homepage": "https://github.com/marvinmcv-svg/Bencar_Store#readme",
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.18",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11"
+  },
+  "private": true,
+  "type": "module"
+}
