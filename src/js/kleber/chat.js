@@ -193,7 +193,14 @@ export function mountKleber() {
   };
   setTimeout(blink, 1800);
   if (!reduced) {
-    gsap.from(launch, { scale: 0, rotation: -40, duration: 1, ease: 'elastic.out(1, .5)', delay: 1.4 });
+    // Explicit end values: a plain gsap.from() read its end state from the page and,
+    // on some pages, ended at scale 0 — Kleber never appeared. The CSS hover
+    // transition is switched off during the pop-in so it can't fight the tween.
+    launch.style.transition = 'none';
+    gsap.fromTo(launch, { scale: 0, rotation: -40 }, { scale: 1, rotation: 0, duration: 1, ease: 'elastic.out(1, .5)', delay: 1.4,
+      onComplete: () => { gsap.set(launch, { clearProps: 'transform,scale,rotate,translate' }); launch.style.transition = ''; } });
+    // Safety net: whatever happens to the tween, Kleber is visible after 4 s.
+    setTimeout(() => { if (launch.getBoundingClientRect().width < 10) { gsap.killTweensOf(launch); gsap.set(launch, { clearProps: 'all' }); } }, 4000);
     gsap.fromTo(root.querySelector('.kl__bubble'), { opacity: 0, x: 10 }, { opacity: 1, x: 0, duration: 0.6, delay: 2.4, ease: 'back.out(2)',
       onComplete: () => gsap.to(root.querySelector('.kl__bubble'), { opacity: 0, x: 10, duration: 0.4, delay: 4 }) });
   }
