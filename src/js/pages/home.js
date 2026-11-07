@@ -174,7 +174,7 @@ function hero() {
     .add(unlock, t0 + 0.6)
     .from('#hero-scroll', { opacity: 0, duration: 1 }, t0 + 0.8);
   window.__bencarIntro = intro; // handy for QA / screenshots
-  const skip = () => { if (intro.isActive()) intro.progress(1); };
+  const skip = () => { if (intro.isActive()) intro.progress(1); unlock(); lenis?.start(); };
   ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, skip, { once: true, passive: true }));
 
   // ── Scroll: logo flies off, Apple's iPhone 18 Pro footage takes over ──
@@ -219,7 +219,8 @@ function story() {
   };
   gsap.set(imgs, { opacity: 0, rotationY: 25, scale: 0.96, transformPerspective: 1200 });
   show(0, 0);
-  if (reduced) { panels.forEach((p) => gsap.set(p, { opacity: 1 })); return; }
+  panels[0].classList.add('is-active');
+  if (reduced) { panels.forEach((p) => { gsap.set(p, { opacity: 1 }); p.classList.add('is-active'); }); return; }
 
   const tl = gsap.timeline({ defaults: { ease: 'none' },
     scrollTrigger: { trigger: '.story', start: 'top top', end: 'bottom bottom', scrub: 0.8,
@@ -228,6 +229,7 @@ function story() {
         const m = Math.min(panels.length - 1, Math.floor(x));
         const n = sets[m].length;
         show(m, Math.min(n - 1, Math.floor((x - m) * n)));
+        panels.forEach((p, i) => p.classList.toggle('is-active', i === m));
       } } });
   tl.fromTo('.story__phone', { y: 20 }, { y: -20, duration: panels.length }, 0);
   panels.forEach((p, i) => {

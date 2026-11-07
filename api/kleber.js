@@ -1,13 +1,14 @@
 // Kleber, the Bencar AI receptionist — Vercel serverless function.
 // POST /api/kleber  { messages: [{ role: 'user' | 'assistant', content: string }] }
 // -> { reply: string }
-// Needs ANTHROPIC_API_KEY in the Vercel project's environment variables.
-// Without it the chat widget falls back to its built-in answers.
-import Anthropic from '@anthropic-ai/sdk';
+// Uses DeepSeek through NVIDIA's OpenAI-compatible API. Needs NVIDIA_API_KEY in the
+// Vercel project's environment variables; without it the chat widget falls back to
+// its built-in catalogue answers.
 import { products, categories, services, fmt, CATALOG_DATE } from '../src/data/catalog.js';
 import { CONFIG } from '../src/config.js';
 
-const client = new Anthropic();
+const API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
+const MODEL = process.env.KLEBER_MODEL || 'deepseek-ai/deepseek-v4.1-flash';
 
 // The catalogue is rendered once per cold start, so the system prompt stays
 // byte-identical between requests and the prompt cache can reuse it.
@@ -47,9 +48,11 @@ ${servicesText}`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
-  if (!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_AUTH_TOKEN) { res.status(503).json({ error: 'not configured' }); return; }
+  const key = process.env.NVIDIA_API_KEY;
+  if (!key) { res.status(503).json({ error: 'not configured' }); return; }
 
-  const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  let body = req.body || {};
+  if (typeof body === 'string') { try { body = JSON.parse(body || '{}'); } catch { body = {}; } }
   const history = Array.isArray(body.messages) ? body.messages : [];
   // Keep the last turns only, with plain-text content of bounded size.
   const messages = history.slice(-12)
@@ -58,25 +61,31 @@ export default async function handler(req, res) {
   while (messages.length && messages[0].role !== 'user') messages.shift();
   if (!messages.length || messages[messages.length - 1].role !== 'user') { res.status(400).json({ error: 'last message must be from the user' }); return; }
 
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 25000);
   try {
-    const response = await client.beta.messages.create({
-      model: 'claude-opus-5-5',
-      max_tokens: 1024,
-      betas: ['server-side-fallback-2026-07-01'],
-      fallbacks: 'default',
-      output_config: { effort: 'low' },
-      system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }],
-      messages,
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [{ role: 'system', content: SYSTEM }, ...messages],
+        temperature: 0.6,
+        top_p: 0.95,
+        max_tokens: 700,
+        stream: false,
+      }),
+      signal: ctrl.signal,
     });
-    if (response.stop_reason === 'refusal') {
-      res.status(200).json({ reply: 'Eso no lo puedo responder por aquí. ¿Te ayudo con algún producto o servicio de Bencar?' });
-      return;
-    }
-    const reply = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
+    if (!r.ok) { res.status(r.status === 429 ? 429 : 502).json({ error: `upstream ${r.status}` }); return; }
+    const data = await r.json();
+    // Reasoning models may include their thinking in <think> tags: keep only the answer.
+    const reply = String(data?.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    if (!reply) { res.status(502).json({ error: 'empty reply' }); return; }
     res.status(200).json({ reply });
-  } catch (error) {
-    if (error instanceof Anthropic.RateLimitError) res.status(429).json({ error: 'busy' });
-    else if (error instanceof Anthropic.APIError) res.status(502).json({ error: `upstream ${error.status}` });
-    else res.status(500).json({ error: 'failed' });
+  } catch {
+    res.status(504).json({ error: 'timeout' });
+  } finally {
+    clearTimeout(timer);
   }
 }
