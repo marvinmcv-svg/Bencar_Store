@@ -45,7 +45,7 @@ const ip18 = byId('iphone-18');
 const LINES = [
   ['Pro', 'Potencia profesional, en tu bolsillo.'],
   ['Pro Max', 'Más pantalla. Más batería. Más todo.'],
-  ['DUO', 'El nuevo integrante de la familia.'],
+  ['Duo', 'El nuevo integrante de la familia.'],
 ];
 document.getElementById('story-copy').innerHTML = ip18.models.map((m, i) => `
   <article class="story__panel" data-panel="${i}">

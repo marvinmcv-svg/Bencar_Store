@@ -61,7 +61,7 @@ export const products = [
     models: [
       { name: '18 Pro', options: [o('256GB', 1680), o('512GB', 1870), o('1TB', 2295), o('2TB', 2945)] },
       { name: '18 Pro Max', options: [o('256GB', 1770), o('512GB', 1975), o('1TB', 2395), o('2TB', 3050)] },
-      { name: '18 DUO', colors: IPHONE_DUO_COLORS, imagesKey: 'iphone-duo', options: [o('256GB', 2550), o('512GB', 2750), o('1TB', 3170), o('2TB', 3780)] },
+      { name: 'Duo', colors: IPHONE_DUO_COLORS, imagesKey: 'iphone-duo', options: [o('256GB', 2550), o('512GB', 2750), o('1TB', 3170), o('2TB', 3780)] },
     ],
   },
   {
