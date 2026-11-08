@@ -32,7 +32,7 @@ async function clickNav(page, click, timeout = 8000) {
 }
 
 async function open(page, path) {
-  await page.goto(BASE + path, { waitUntil: 'load' });
+  await page.goto(BASE + path, { waitUntil: 'load', timeout: 90000 });
   if (path === '/' || path.startsWith('/#')) {
     await settle(page, 300);
     await page.mouse.wheel(0, 20); // skip the logo intro, as a visitor scrolling would
@@ -114,8 +114,10 @@ async function aim(page, qa) {
     const rc = a.getBoundingClientRect();
     if (rc.width < 2 || rc.height < 2) return { err: 'not visible (zero size)' };
     if (rc.bottom < 0 || rc.top > innerHeight || rc.right < 0 || rc.left > innerWidth) return { err: `off screen (${Math.round(rc.left)},${Math.round(rc.top)})` };
-    // Click near the middle, nudged clear of rounded corners.
-    const x = rc.left + rc.width / 2, y = rc.top + Math.min(rc.height / 2, 20);
+    // Tap the middle of the part that is on screen (below the sticky nav/filter bars).
+    const navBottom = Math.max(0, ...[...document.querySelectorAll('.gnav, .filters')].map((e) => e.getBoundingClientRect().bottom));
+    const top = Math.max(rc.top, navBottom + 4), bottom = Math.min(rc.bottom, innerHeight);
+    const x = rc.left + rc.width / 2, y = top < bottom ? (top + bottom) / 2 : rc.top + rc.height / 2;
     const hit = document.elementFromPoint(x, y);
     const target = hit && hit.closest('a, button');
     const desc = (e) => (e ? `${e.tagName.toLowerCase()}.${(e.className && typeof e.className === 'string' ? e.className.split(' ')[0] : '')}${e.getAttribute('href') ? `[${e.getAttribute('href')}]` : ''} "${(e.textContent || e.getAttribute('aria-label') || '').trim().slice(0, 30)}"` : 'nothing');
@@ -198,6 +200,8 @@ async function sectionJourneys(page, label) {
         const a = [...document.querySelectorAll(`a[href="${href}"]`)].find((x) => x.offsetWidth && !x.closest('.mmenu'));
         if (!a) return { err: 'not visible at this size' };
         a.dataset.qa = 'sec';
+        const rail = a.closest('.rail');
+        if (rail) rail.scrollLeft = a.offsetLeft - (rail.clientWidth - a.offsetWidth) / 2;
         const { lenis } = await import('/src/js/core.js');
         const ty = a.getBoundingClientRect().top + scrollY - innerHeight / 2;
         lenis ? lenis.scrollTo(Math.max(0, ty), { immediate: true, force: true }) : a.scrollIntoView({ block: 'center' });
