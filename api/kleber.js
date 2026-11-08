@@ -92,8 +92,10 @@ export default async function handler(req, res) {
     const reply = String(data?.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     if (!reply) { res.status(502).json({ error: 'empty reply' }); return; }
     res.status(200).json({ reply });
-  } catch {
-    res.status(504).json({ error: 'timeout' });
+  } catch (err) {
+    const timedOut = err?.name === 'AbortError';
+    if (!timedOut) console.error(`kleber: request failed: ${err?.name}: ${err?.message} (key length ${key.length}, has whitespace: ${/\s/.test(key)}, non-ASCII: ${/[^\x21-\x7e]/.test(key)})`);
+    res.status(timedOut ? 504 : 502).json({ error: timedOut ? 'timeout' : 'request failed' });
   } finally {
     clearTimeout(timer);
   }
