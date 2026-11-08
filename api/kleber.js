@@ -1,7 +1,7 @@
 // Kleber, the Bencar AI receptionist — Vercel serverless function.
 // POST /api/kleber  { messages: [{ role: 'user' | 'assistant', content: string }] }
 // -> { reply: string }
-// Uses DeepSeek through NVIDIA's OpenAI-compatible API. Needs NVIDIA_API_KEY (or api_key) in the
+// Uses Nemotron 3 Ultra (DeepSeek on NVIDIA's free tier did not respond) through NVIDIA's OpenAI-compatible API. Needs NVIDIA_API_KEY (or api_key) in the
 // Vercel project's environment variables; without it the chat widget falls back to
 // its built-in catalogue answers.
 import { products, categories, services, fmt, CATALOG_DATE } from '../src/data/catalog.js';
@@ -10,7 +10,7 @@ import { CONFIG } from '../src/config.js';
 export const config = { maxDuration: 60 };
 
 const API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
-const MODEL = process.env.KLEBER_MODEL || 'deepseek-ai/deepseek-v4.1-flash';
+const MODEL = process.env.KLEBER_MODEL || 'nvidia/nemotron-3-ultra-550b-a55b';
 
 // The catalogue is rendered once per cold start, so the system prompt stays
 // byte-identical between requests and the prompt cache can reuse it.
@@ -58,28 +58,6 @@ export default async function handler(req, res) {
 
   let body = req.body || {};
   if (typeof body === 'string') { try { body = JSON.parse(body || '{}'); } catch { body = {}; } }
-  // TEMPORARY diagnostic: which models answer, and how fast. Reveals no secrets.
-  if (body.diag === 'models') {
-    const h = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' };
-    const out = {};
-    try {
-      const m = await fetch('https://integrate.api.nvidia.com/v1/models', { headers: h, signal: AbortSignal.timeout(10000) });
-      const ids = (await m.json())?.data?.map((x) => x.id) || [];
-      out.modelsStatus = m.status;
-      out.matching = ids.filter((id) => /deepseek|nemotron|llama-3\.3|qwen/i.test(id));
-    } catch (e) { out.modelsError = e?.name; }
-    const cands = [MODEL, ...(body.models || [])];
-    out.tests = await Promise.all(cands.map(async (model) => {
-      const t0 = Date.now();
-      try {
-        const r = await fetch(API_URL, { method: 'POST', headers: h, signal: AbortSignal.timeout(40000),
-          body: JSON.stringify({ model, messages: [{ role: 'user', content: 'Di hola en una palabra.' }], max_tokens: 20, stream: false }) });
-        const txt = await r.text();
-        return { model, status: r.status, ms: Date.now() - t0, sample: r.ok ? (JSON.parse(txt).choices?.[0]?.message?.content || '').slice(0, 60) : txt.slice(0, 160) };
-      } catch (e) { return { model, error: e?.name, ms: Date.now() - t0 }; }
-    }));
-    res.status(200).json(out); return;
-  }
   const history = Array.isArray(body.messages) ? body.messages : [];
   // Keep the last turns only, with plain-text content of bounded size.
   const messages = history.slice(-12)
@@ -89,7 +67,7 @@ export default async function handler(req, res) {
   if (!messages.length || messages[messages.length - 1].role !== 'user') { res.status(400).json({ error: 'last message must be from the user' }); return; }
 
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 45000);
+  const timer = setTimeout(() => ctrl.abort(), 18000);
   try {
     const r = await fetch(API_URL, {
       method: 'POST',
@@ -102,7 +80,7 @@ export default async function handler(req, res) {
         max_tokens: 700,
         stream: false,
         // Answer straight away; no long hidden reasoning before replying.
-        chat_template_kwargs: { thinking: false, enable_thinking: false },
+        chat_template_kwargs: { enable_thinking: false },
       }),
       signal: ctrl.signal,
     });

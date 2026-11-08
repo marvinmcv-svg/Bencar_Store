@@ -4,7 +4,7 @@ Premium online store for **Bencar** (Instagram [@ben_car63](https://www.instagra
 
 - **Stack:** Vite · three.js (3D logo) · GSAP + ScrollTrigger · Lenis smooth scroll
 - **Product imagery:** official Apple Store photos (several angles per product) in `public/products/apple/`; the hero's iPhone 18 Pro is an image sequence from Apple's own animation in `public/seq/iphone18/`. Anker items keep the photos from the Bencar catalogue.
-- **Kleber, the AI receptionist:** chat widget on every page (`src/js/kleber/`). Answers come from DeepSeek (via NVIDIA's API) through `api/kleber.js` (a Vercel function) when `NVIDIA_API_KEY` is set in the Vercel project; without it Kleber answers from the catalogue on his own and hands off to WhatsApp.
+- **Kleber, the AI receptionist:** chat widget on every page (`src/js/kleber/`). Answers come from NVIDIA Nemotron 3 Ultra (via NVIDIA's API) through `api/kleber.js` (a Vercel function) when `NVIDIA_API_KEY` is set in the Vercel project; without it Kleber answers from the catalogue on his own and hands off to WhatsApp.
 - **Pages:** `index.html` (home), `tienda.html` (store), `producto.html?id=…` (configurator), `servicios.html` (services)
 - **Checkout:** the bag sends a pre-filled order to WhatsApp, with totals in USD and Bs.
 
