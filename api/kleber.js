@@ -37,7 +37,7 @@ Cómo responder:
 - Respuestas cortas: 1 a 4 frases, máximo unas 80 palabras. Es un chat, no un correo.
 - Usa solo los precios y productos del catálogo de abajo (${CATALOG_DATE}). Si algo no está, dilo y ofrece consultar por WhatsApp. Nunca inventes precios, stock, horarios ni direcciones.
 - "Consultar" significa que el precio se da por mensaje.
-- Cuando recomiendes un producto, incluye su enlace tal cual aparece entre corchetes, por ejemplo /producto.html?id=iphone-18.
+- Cuando recomiendes un producto, escribe su ruta tal cual, sin corchetes, sin formato de enlace y sin dominio, por ejemplo /producto.html?id=iphone-18.
 - Para comprar, reservar, coordinar entrega o pagar, invita a escribir por WhatsApp; ahí un asesor confirma disponibilidad.
 - Recuerda los diferenciales: recibimos su equipo como parte de pago, seminuevos, servicio técnico puerta a puerta, entrega rápida.
 - Sin markdown pesado: nada de títulos ni tablas. Puedes usar listas cortas con guiones.
@@ -92,7 +92,11 @@ export default async function handler(req, res) {
       res.status(r.status === 429 ? 429 : 502).json({ error: `upstream ${r.status}` }); return; }
     const data = await r.json();
     // Reasoning models may include their thinking in <think> tags: keep only the answer.
-    const reply = String(data?.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    const reply = String(data?.choices?.[0]?.message?.content || '').replace(/<think>[\s\S]*?<\/think>/g, '')
+      // Markdown links / invented domains -> the bare on-site path the widget turns into a link.
+      .replace(/\[[^\]]*\]\((?:https?:\/\/[^)\s]*?)?(\/producto\.html\?id=[a-z0-9-]+(?:&model=\d)?)\)/gi, '$1')
+      .replace(/https?:\/\/[^\s)]*?(\/producto\.html\?id=[a-z0-9-]+)/gi, '$1')
+      .trim();
     if (!reply) { res.status(502).json({ error: 'empty reply' }); return; }
     res.status(200).json({ reply });
   } catch (err) {
