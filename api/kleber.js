@@ -48,11 +48,10 @@ ${servicesText}`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'POST only' }); return; }
-  // Accept the key as pasted from NVIDIA's sample code: strip quotes, a trailing
-  // comma and a "Bearer " prefix.
-  const key = (process.env.NVIDIA_API_KEY || process.env.api_key || '')
-    .trim().replace(/^api_key\s*=\s*/i, '').replace(/,$/, '').replace(/^["'`]|["'`]$/g, '')
-    .replace(/^Bearer\s+/i, '').trim();
+  // Accept the key however it was pasted: on its own, quoted, with "Bearer", or
+  // inside NVIDIA's whole sample-code snippet — pull out the nvapi-… token.
+  const raw = process.env.NVIDIA_API_KEY || process.env.api_key || '';
+  const key = (raw.match(/nvapi-[A-Za-z0-9_-]+/) || [raw.trim().replace(/^Bearer\s+/i, '').replace(/^["'`]|["'`]$/g, '')])[0];
   if (!key) { res.status(503).json({ error: 'not configured' }); return; }
 
   let body = req.body || {};
@@ -94,7 +93,7 @@ export default async function handler(req, res) {
     res.status(200).json({ reply });
   } catch (err) {
     const timedOut = err?.name === 'AbortError';
-    if (!timedOut) console.error(`kleber: request failed: ${err?.name}: ${err?.message} (key length ${key.length}, has whitespace: ${/\s/.test(key)}, non-ASCII: ${/[^\x21-\x7e]/.test(key)})`);
+    if (!timedOut) console.error(`kleber: request failed: ${err?.name} (key length ${key.length}, nvapi- prefix: ${key.startsWith('nvapi-')})`); // never log err.message: it can echo the key
     res.status(timedOut ? 504 : 502).json({ error: timedOut ? 'timeout' : 'request failed' });
   } finally {
     clearTimeout(timer);
