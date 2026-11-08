@@ -140,7 +140,7 @@ async function landedOn(page) {
 }
 
 /** Click every product link on a page for real and check where it lands (spread over a few tabs). */
-async function productJourneys(page, path, label, { workers = 4 } = {}) {
+async function productJourneys(page, path, label, { workers = 3 } = {}) {
   await open(page, path);
   const links = (await productLinks(page)).filter((l) => !l.inHidden);
   // One real click per distinct (destination, place) — e.g. a card's image link and its "Comprar" button are both clicked.
@@ -152,7 +152,14 @@ async function productJourneys(page, path, label, { workers = 4 } = {}) {
     let fresh = tab === page;
     while (queue.length) {
       const l = queue.shift();
-      if (!fresh) { await open(tab, path); await productLinks(tab); }
+      if (!fresh) {
+        // A slow page load is retried rather than abandoning the remaining links.
+        let ready = false;
+        for (let k = 0; k < 3 && !ready; k++) {
+          try { await open(tab, path); await productLinks(tab); ready = true; } catch { await settle(tab, 1000); }
+        }
+        if (!ready) { fail(`${label} ${path} "${l.text}"`, `page ${path} would not load`); continue; }
+      }
       fresh = false;
       await clickProduct(tab, path, label, l).catch((e) => fail(`${label} ${path} "${l.text}"`, 'crashed: ' + e.message.split('\n')[0]));
     }
