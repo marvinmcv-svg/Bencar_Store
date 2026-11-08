@@ -7,6 +7,8 @@
 import { products, categories, services, fmt, CATALOG_DATE } from '../src/data/catalog.js';
 import { CONFIG } from '../src/config.js';
 
+export const config = { maxDuration: 60 };
+
 const API_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
 const MODEL = process.env.KLEBER_MODEL || 'deepseek-ai/deepseek-v4.1-flash';
 
@@ -65,7 +67,7 @@ export default async function handler(req, res) {
   if (!messages.length || messages[messages.length - 1].role !== 'user') { res.status(400).json({ error: 'last message must be from the user' }); return; }
 
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 25000);
+  const timer = setTimeout(() => ctrl.abort(), 45000);
   try {
     const r = await fetch(API_URL, {
       method: 'POST',
@@ -77,6 +79,8 @@ export default async function handler(req, res) {
         top_p: 0.95,
         max_tokens: 700,
         stream: false,
+        // Answer straight away; no long hidden reasoning before replying.
+        chat_template_kwargs: { thinking: false, enable_thinking: false },
       }),
       signal: ctrl.signal,
     });
