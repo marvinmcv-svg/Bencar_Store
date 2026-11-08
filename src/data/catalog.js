@@ -36,6 +36,11 @@ const IPHONE_18_COLORS = [
   { name: 'Azul glaciar', hex: '#b5c9de' },
   { name: 'Negro', hex: '#2c2c2e' },
 ];
+// iPhone Duo (the foldable) comes in its own two finishes, with its own photos.
+const IPHONE_DUO_COLORS = [
+  { name: 'Cielo nocturno', hex: '#353e4a' },
+  { name: 'Blanco estrella', hex: '#ecebe9' },
+];
 
 const IPHONE_11_TO_17 = [
   'iPhone 11', 'iPhone 11 Pro', 'iPhone 11 Pro Max', 'iPhone 12', 'iPhone 12 Pro', 'iPhone 12 Pro Max',
@@ -56,7 +61,7 @@ export const products = [
     models: [
       { name: '18 Pro', options: [o('256GB', 1680), o('512GB', 1870), o('1TB', 2295), o('2TB', 2945)] },
       { name: '18 Pro Max', options: [o('256GB', 1770), o('512GB', 1975), o('1TB', 2395), o('2TB', 3050)] },
-      { name: '18 DUO', options: [o('256GB', 2550), o('512GB', 2750), o('1TB', 3170), o('2TB', 3780)] },
+      { name: '18 DUO', colors: IPHONE_DUO_COLORS, imagesKey: 'iphone-duo', options: [o('256GB', 2550), o('512GB', 2750), o('1TB', 3170), o('2TB', 3780)] },
     ],
   },
   {
@@ -210,7 +215,11 @@ export const products = [
   { id: 'dyson-airstrait', cat: 'dyson', name: 'Dyson Airstrait', art: 'dyson', tint: '#c06a3c', currency: 'USD', tagline: 'Seca y alisa al mismo tiempo.', models: [{ name: 'Airstrait', options: [o('Consultar', null)] }] },
 ];
 
-products.forEach((p) => { p.images = IMAGES[p.id] || []; p.colorImages = COLOR_IMAGES[p.id] || null; });
+products.forEach((p) => {
+  p.images = IMAGES[p.id] || []; p.colorImages = COLOR_IMAGES[p.id] || null;
+  // A model with its own finishes (iPhone Duo) carries its own photo sets.
+  p.models.forEach((m) => { if (m.imagesKey) m.colorImages = COLOR_IMAGES[m.imagesKey] || null; });
+});
 
 export const services = [
   {

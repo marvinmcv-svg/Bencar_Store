@@ -202,8 +202,9 @@ function story() {
   const panels = gsap.utils.toArray('.story__panel');
   const bars = gsap.utils.toArray('#story-progress b');
   const container = document.getElementById('story-canvas');
-  const sets = [0, 1, 2].map((i) => {
-    const set = ip18.colorImages[i] || ip18.images;
+  const sets = ip18.models.map((m, i) => {
+    // The Duo has its own finishes and photos; the Pro models show one Pro finish each.
+    const set = m.colorImages?.[0] || ip18.colorImages[i] || ip18.images;
     return ANGLE_ORDER.map((suf) => set.find((src) => src.endsWith(`-202609${suf}.webp`))).filter(Boolean);
   });
   container.innerHTML = `<div class="story__phone">${sets.map((set, m) => set.map((src, a) =>

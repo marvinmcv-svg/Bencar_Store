@@ -17,9 +17,12 @@ const firstAvailable = () => Math.max(0, p.models.findIndex((m) => !m.soldOut));
 const sel = {
   model: Math.min(p.models.length - 1, Math.max(0, Number(params.get('model')) || firstAvailable())),
   option: 0,
-  color: p.colors ? 0 : -1,
+  color: 0,
 };
 if (p.models[sel.model].soldOut) sel.model = firstAvailable();
+// Finishes and their photos: a model can bring its own (iPhone Duo), otherwise the product's.
+const colorsFor = (m = sel.model) => p.models[m].colors || p.colors || null;
+const colorImagesFor = () => p.models[sel.model].colorImages || p.colorImages;
 
 // ── Header ────────────────────────────────────────────────────────────────
 const from = fromPrice(p);
@@ -57,11 +60,11 @@ function render() {
         }).join('')}
       </div>
     </fieldset>` : ''}
-    ${p.colors ? `
+    ${colorsFor() ? `
     <div class="opt">
-      <h2>Color. <span>${p.colors[sel.color].name}</span></h2>
+      <h2>Color. <span>${colorsFor()[sel.color].name}</span></h2>
       <div class="colors" role="radiogroup" aria-label="Color">
-        ${p.colors.map((c, i) => `<button type="button" class="color" role="radio" aria-label="${c.name}" aria-checked="${i === sel.color}" data-color="${i}" style="background:${c.hex}"></button>`).join('')}
+        ${colorsFor().map((c, i) => `<button type="button" class="color" role="radio" aria-label="${c.name}" aria-checked="${i === sel.color}" data-color="${i}" style="background:${c.hex}"></button>`).join('')}
       </div>
     </div>` : ''}
     ${showOpts ? `
@@ -77,21 +80,28 @@ function render() {
     ${info(infoIcon, 'Recibimos tu dispositivo usado como parte de pago. Consulta por seminuevos y por nuestro servicio técnico puerta a puerta.')}
     <div class="summary">
       <div class="summary__price" aria-live="polite">${fmt(opt?.price ?? null, p.currency)}
-        <small>${[p.name, showModels ? model.name : '', showOpts ? opt?.label : '', p.colors ? p.colors[sel.color].name : ''].filter(Boolean).join(' · ')}</small></div>
+        <small>${[p.name, showModels ? model.name : '', showOpts ? opt?.label : '', colorsFor() ? colorsFor()[sel.color].name : ''].filter(Boolean).join(' · ')}</small></div>
       <div class="summary__ctas">
         <button type="button" class="btn" data-add>${opt?.price == null ? 'Agregar y consultar' : 'Agregar a la bolsa'}</button>
         <a class="btn btn--ghost" data-ask target="_blank" rel="noopener" aria-label="Consultar por WhatsApp">${ICONS.wa}</a>
       </div>
     </div>`;
 
-  const spec = [showModels ? model.name : '', showOpts ? opt?.label : '', p.colors ? p.colors[sel.color].name : ''].filter(Boolean).join(' · ');
+  const spec = [showModels ? model.name : '', showOpts ? opt?.label : '', colorsFor() ? colorsFor()[sel.color].name : ''].filter(Boolean).join(' · ');
   form.querySelector('[data-ask]').href = waLink(`¡Hola Bencar! Quiero consultar por: ${p.name}${spec ? ` (${spec})` : ''}.`);
 }
 
 form.addEventListener('click', (e) => {
   const t = e.target.closest('button');
   if (!t || t.disabled) return;
-  if (t.dataset.model != null) { sel.model = Number(t.dataset.model); sel.option = 0; render(); pulse(); }
+  if (t.dataset.model != null) {
+    const prev = sel.model;
+    sel.model = Number(t.dataset.model); sel.option = 0;
+    const swap = colorsFor(prev) !== colorsFor() || p.models[prev].colorImages !== p.models[sel.model].colorImages;
+    if (swap) sel.color = 0;
+    render();
+    if (swap) viewer.setColor?.(); else pulse();
+  }
   else if (t.dataset.opt != null) { sel.option = Number(t.dataset.opt); render(); }
   else if (t.dataset.color != null) { sel.color = Number(t.dataset.color); render(); viewer.setColor?.(); }
   else if (t.hasAttribute('data-add')) addToBag(t);
@@ -101,11 +111,11 @@ function addToBag(btn) {
   const model = p.models[sel.model];
   const opt = model.options[sel.option];
   bag.add({
-    id: p.id, name: p.name, art: p.art, tint: p.colors ? p.colors[sel.color].hex : p.tint, img: viewer.current?.() || p.images[0] || '',
+    id: p.id, name: p.name, art: p.art, tint: colorsFor() ? colorsFor()[sel.color].hex : p.tint, img: viewer.current?.() || p.images[0] || '',
     model: p.models.length > 1 ? model.name : '', option: opt && !['Estándar'].includes(opt.label) ? opt.label : '',
-    color: p.colors ? p.colors[sel.color].name : '', price: opt?.price ?? null, currency: p.currency,
+    color: colorsFor() ? colorsFor()[sel.color].name : '', price: opt?.price ?? null, currency: p.currency,
   });
-  flyToBag(document.getElementById('stage'), p.art, p.colors ? p.colors[sel.color].hex : p.tint, viewer.current?.() || p.images[0]);
+  flyToBag(document.getElementById('stage'), p.art, colorsFor() ? colorsFor()[sel.color].hex : p.tint, viewer.current?.() || p.images[0]);
   setTimeout(() => toast(`Agregado a tu bolsa. <button type="button" data-open-bag>Ver bolsa</button>`), 700);
   if (!reduced) gsap.fromTo(btn, { scale: 0.94 }, { scale: 1, duration: 0.6, ease: 'elastic.out(1,.4)' });
 }
@@ -115,7 +125,7 @@ function addToBag(btn) {
 // yourself; picking a colour swaps in that finish's photo set.
 const viewer = {};
 function pulse() { viewer.spin?.(); }
-const imagesFor = () => (p.colorImages && p.colorImages[sel.color]?.length ? p.colorImages[sel.color] : p.images);
+const imagesFor = () => { const ci = colorImagesFor(); return ci && ci[sel.color]?.length ? ci[sel.color] : p.images; };
 
 function mountViewer() {
   const stageEl = document.getElementById('stage');
@@ -124,7 +134,7 @@ function mountViewer() {
   let current = 0;
   const node = (src) => (src
     ? `<img src="${src}" alt="${p.name}" decoding="async" draggable="false"/>`
-    : art(p.art, p.colors ? p.colors[sel.color].hex : p.tint));
+    : art(p.art, colorsFor() ? colorsFor()[sel.color].hex : p.tint));
   const drawThumbs = () => {
     thumbs.innerHTML = imgs.length > 1 ? imgs.map((src, i) => `<button type="button" role="tab" aria-label="Vista ${i + 1}" aria-current="${i === current}" data-i="${i}"><img src="${src}" alt=""/></button>`).join('') : '';
   };
@@ -175,7 +185,7 @@ function mountViewer() {
 
   viewer.setColor = () => {
     const next = imagesFor();
-    if (!next.length) { stageEl.lastElementChild.outerHTML = art(p.art, p.colors[sel.color].hex); return; }
+    if (!next.length) { stageEl.lastElementChild.outerHTML = art(p.art, colorsFor()[sel.color].hex); return; }
     imgs = next; preload(); drawThumbs(); show(0, 1, true); play();
   };
   viewer.spin = () => { if (!reduced) gsap.fromTo(stageEl.lastElementChild, { scale: 0.94 }, { scale: 1, duration: 0.9, ease: 'elastic.out(1,.5)' }); };

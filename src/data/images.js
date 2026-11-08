@@ -212,6 +212,18 @@ export const COLOR_IMAGES = {
       "/products/apple/iphone-18-pro-finish-select-black-202609_av6.webp"
     ]
   ],
+  "iphone-duo": [
+    [
+      "/products/apple/iphone-duo-finish-select-night-sky-202609.webp",
+      "/products/apple/iphone-duo-finish-select-night-sky-202609_av2.webp",
+      "/products/apple/iphone-duo-finish-select-night-sky-202609_av3.webp"
+    ],
+    [
+      "/products/apple/iphone-duo-finish-select-star-white-202609.webp",
+      "/products/apple/iphone-duo-finish-select-star-white-202609_av2.webp",
+      "/products/apple/iphone-duo-finish-select-star-white-202609_av3.webp"
+    ]
+  ],
   "iphone-17": [
     [
       "/products/apple/iphone-17-pro-finish-select-202509-6-3inch-cosmicorange.webp",
