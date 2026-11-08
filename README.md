@@ -44,4 +44,8 @@ npm run build    # static site in dist/ (deploy to Vercel/Netlify/any host)
 npm run dev                 # in one terminal
 node tests/e2e.cjs          # every link on every page + search, bag, filters, gallery, Kleber, mobile menu
 node tests/hit.cjs          # every visible button really receives its own click
+node tests/journeys.cjs     # real mouse clicks on every product button (desktop + iPhone):
+                            # lands on the product/model it advertises; category links,
+                            # filters, search, Kleber, configurator, bag + WhatsApp order
+                            # (ONLY=desktop|mobile, STEPS=search,bag to run a subset)
 ```

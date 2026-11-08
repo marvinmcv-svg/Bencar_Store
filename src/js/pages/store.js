@@ -58,5 +58,11 @@ ready();
 
 if (location.hash) {
   const el = document.querySelector(location.hash);
-  if (el) setTimeout(() => (lenis ? lenis.scrollTo(el, { offset: -110, immediate: true }) : el.scrollIntoView()), 120);
+  // Lenis measured the page before the sections above were rendered, so re-measure
+  // first; otherwise it clamps the jump to the old (short) page and stops near Mac.
+  if (el) setTimeout(() => {
+    if (!lenis) return el.scrollIntoView();
+    lenis.resize();
+    lenis.scrollTo(el, { offset: -110, immediate: true, force: true });
+  }, 120);
 }
