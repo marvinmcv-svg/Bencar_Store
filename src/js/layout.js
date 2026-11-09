@@ -44,17 +44,26 @@ export function mountLayout() {
         <button class="icon-btn bag-btn" data-open-bag aria-label="Bolsa">${I.bag}<span class="bag-count" hidden>0</span></button>
         <button class="icon-btn burger" data-open-menu aria-label="Menú" aria-expanded="false"><span></span><span></span></button>
       </div>
-    </nav>
-    <div class="mmenu" hidden>
-      <ul>${NAV.map(([l, h]) => `<li><a href="${h}">${l}</a></li>`).join('')}</ul>
-      <a class="mmenu__wa" href="${waLink()}" target="_blank" rel="noopener">${I.wa} Escríbenos por WhatsApp</a>
-    </div>`;
+    </nav>`;
   document.body.prepend(header);
+
+  // The mobile menu lives outside the header: the header's backdrop-filter would
+  // otherwise become the containing block of this fixed panel and clip it to 52px.
+  const menu = document.createElement('div');
+  menu.className = 'mmenu';
+  menu.id = 'mmenu';
+  menu.hidden = true;
+  menu.setAttribute('role', 'dialog');
+  menu.setAttribute('aria-label', 'Menú');
+  menu.innerHTML = `
+    <ul>${NAV.map(([l, h], i) => `<li style="--i:${i}"><a href="${h}">${l}</a></li>`).join('')}</ul>
+    <a class="mmenu__wa" href="${waLink()}" target="_blank" rel="noopener">${I.wa} Escríbenos por WhatsApp</a>`;
+  header.after(menu);
 
   const promo = document.createElement('div');
   promo.className = 'ribbon';
   promo.innerHTML = `<p>Compra tu iPhone 18 y obtén <strong>50% de descuento</strong> en tu funda original Apple + protector de regalo. <a href="/producto.html?id=iphone-18">Comprar ›</a></p>`;
-  header.after(promo);
+  menu.after(promo);
 
   // Bag drawer
   const drawer = document.createElement('aside');
@@ -124,12 +133,12 @@ export function mountLayout() {
   fab.innerHTML = I.wa;
   document.body.append(fab);
 
-  wireNav(header);
+  wireNav(header, menu);
   wireBag(drawer);
   wireSearch(search);
 }
 
-function wireNav(header) {
+function wireNav(header, menu) {
   let last = 0;
   const onScroll = () => {
     const y = window.scrollY;
@@ -140,16 +149,28 @@ function wireNav(header) {
   window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
 
   const burger = header.querySelector('[data-open-menu]');
-  const menu = header.querySelector('.mmenu');
-  burger.addEventListener('click', () => {
-    const open = !document.body.classList.contains('menu-open');
+  burger.setAttribute('aria-controls', 'mmenu');
+  let hideTimer;
+  const setMenu = (open) => {
+    if (open === document.body.classList.contains('menu-open')) return;
+    clearTimeout(hideTimer);
     document.body.classList.toggle('menu-open', open);
+    document.documentElement.classList.toggle('lock', open);
     burger.setAttribute('aria-expanded', String(open));
-    menu.hidden = false;
-    requestAnimationFrame(() => menu.classList.toggle('is-open', open));
-    if (!open) setTimeout(() => { if (!menu.classList.contains('is-open')) menu.hidden = true; }, 500);
-  });
-  menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => burger.click()));
+    burger.setAttribute('aria-label', open ? 'Cerrar menú' : 'Menú');
+    header.classList.remove('is-hidden');
+    if (open) {
+      menu.hidden = false;
+      requestAnimationFrame(() => requestAnimationFrame(() => menu.classList.add('is-open')));
+    } else {
+      menu.classList.remove('is-open');
+      hideTimer = setTimeout(() => { menu.hidden = true; }, 450);
+    }
+  };
+  burger.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+  menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+  matchMedia('(min-width: 901px)').addEventListener('change', (e) => { if (e.matches) setMenu(false); });
 
   const path = location.pathname.replace(/index\.html$/, '');
   header.querySelectorAll('.gnav__links a').forEach((a) => {

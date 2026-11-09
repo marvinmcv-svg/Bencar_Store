@@ -1,6 +1,6 @@
 import { boot, ready, gsap, reduced, split, lenis } from '../core.js';
 import { CONFIG, waLink } from '../../config.js';
-import { products, byId, fmt, fromPrice } from '../../data/catalog.js';
+import { products, categories, byId, fmt, fromPrice } from '../../data/catalog.js';
 import { art } from '../art.js';
 import { shelf, wireShelves } from '../cards.js';
 import { createStage, makeWaves, webglOK } from '../three/stage.js';
@@ -32,6 +32,13 @@ document.getElementById('tiles').innerHTML = TILES.map((t) => `
     </div>
     <div class="tile__art" data-parallax="-12">${thumb(byId(t.id))}</div>
   </article>`).join('');
+
+// Shop by category — first thing under the hero, so visitors see what Bencar sells.
+const CAT_IMG = { iphone: 'iphone-17', mac: 'macbook-air', ipad: 'ipad-air', watch: 'watch-ultra-3', airpods: 'airpods-pro-3', accesorios: 'airtag', anker: 'anker-nano-pro-20' };
+document.getElementById('cats').innerHTML = categories.map((c) => {
+  const src = CAT_IMG[c.id] && byId(CAT_IMG[c.id])?.images[0];
+  return `<a href="/tienda.html#${c.id}">${src ? `<img src="${src}" alt="" loading="lazy"/>` : art(c.art)}<span>${c.name}</span></a>`;
+}).join('') + `<a href="/servicios.html"><svg class="art cats__svc" viewBox="0 0 40 40" aria-hidden="true"><path d="M24 8a8 8 0 0 0-7.4 11L8 27.6a2.8 2.8 0 0 0 4 4l8.6-8.6A8 8 0 0 0 31 16l-5 1-3-3 1-5z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg><span>Servicios</span></a>`;
 
 document.getElementById('featured').innerHTML = shelf(products.filter((p) => p.featured), 'Lo más buscado');
 wireShelves();
@@ -84,10 +91,13 @@ function heroSequence(canvas) {
     if (!im || (!force && i === drawn)) return;
     drawn = i;
     const { width: w, height: h } = canvas;
-    const sc = Math.max(w / im.width, h / im.height); // cover
+    // Landscape screens: cover. Portrait phones: "cover" would crop the 4:3
+    // footage to a lens close-up, so show most of the phone, a little above centre.
+    const portrait = h > w * 1.1;
+    const sc = portrait ? (w / im.width) * 1.55 : Math.max(w / im.width, h / im.height);
     const iw = im.width * sc, ih = im.height * sc;
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
-    ctx.drawImage(im, (w - iw) / 2, (h - ih) / 2, iw, ih);
+    ctx.drawImage(im, (w - iw) / 2, portrait ? h * 0.4 - ih / 2 : (h - ih) / 2, iw, ih);
   }
   new ResizeObserver(size).observe(canvas);
   return {
@@ -186,11 +196,21 @@ function hero() {
     .to(state, { waveOp: 0, duration: 0.8 }, 0.2)
     .to(lockup, { opacity: 0, y: -60, filter: 'blur(10px)', duration: 0.7 }, 0)
     .to(seqCanvas, { opacity: 1, duration: 0.6 }, 0.5)
-    .to(state, { frame: 1, duration: 3.6, onUpdate: () => seq.set(state.frame) }, 0.7)
-    .fromTo(feats[0], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 1.5)
-    .fromTo(feats[1], { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4 }, 2.4)
-    .fromTo(feats[2], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 3.1)
-    .to(feats, { opacity: 0, y: -30, duration: 0.4, stagger: 0.05 }, 4.0)
+    .to(state, { frame: 1, duration: 3.6, onUpdate: () => seq.set(state.frame) }, 0.7);
+  if (isMobile()) {
+    // Phones: one caption at a time, in the same spot under the footage.
+    feats.forEach((f, i) => {
+      const at = 1.3 + i * 0.9;
+      tl.fromTo(f, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.3 }, at)
+        .to(f, { opacity: 0, y: -24, duration: 0.25 }, at + 0.65);
+    });
+  } else {
+    tl.fromTo(feats[0], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 1.5)
+      .fromTo(feats[1], { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4 }, 2.4)
+      .fromTo(feats[2], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4 }, 3.1)
+      .to(feats, { opacity: 0, y: -30, duration: 0.4, stagger: 0.05 }, 4.0);
+  }
+  tl
     .to(seqCanvas, { opacity: 0.32, scale: 0.94, duration: 0.6 }, 4.3)
     .to(stageEl.children, { opacity: 1, y: 0, stagger: 0.08, duration: 0.4 }, 4.6);
 }
@@ -232,10 +252,11 @@ function story() {
         show(m, Math.min(n - 1, Math.floor((x - m) * n)));
         panels.forEach((p, i) => p.classList.toggle('is-active', i === m));
       } } });
+  const axis = isMobile() ? 'scaleX' : 'scaleY';
   tl.fromTo('.story__phone', { y: 20 }, { y: -20, duration: panels.length }, 0);
   panels.forEach((p, i) => {
     tl.fromTo(p, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.25 }, i + 0.02)
-      .fromTo(bars[i], { scaleY: 0 }, { scaleY: 1, duration: 1 }, i);
+      .fromTo(bars[i], { [axis]: 0 }, { [axis]: 1, duration: 1 }, i);
     if (i < panels.length - 1) tl.to(p, { opacity: 0, y: -60, duration: 0.2 }, i + 0.8);
   });
 }
